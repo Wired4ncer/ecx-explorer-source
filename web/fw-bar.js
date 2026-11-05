@@ -3,7 +3,6 @@
 // Built with createElement/textContent only — nothing from the API is parsed as HTML.
 (function () {
   'use strict';
-  var KEY = 'fw-bar-hidden';
   // fork page: fork-observer's main.js sets the tab title to "fork-observer - <network>"; show our name
   // (runs before the hide check, so closing the pill does not bring the old name back)
   if (location.hostname.indexOf('fork.') === 0) {
@@ -154,7 +153,6 @@
     addBolts();
   }
 
-  try { if (sessionStorage.getItem(KEY)) return; } catch (e) { /* storage blocked: show it */ }
   if (window.top !== window) return;   // not inside embeds/iframes
   if (document.getElementById('fw-bar')) return;
 
@@ -192,18 +190,10 @@
   var price = link('https://jup.ag/tokens/' + WECX_MINT, '', 'display:none;white-space:nowrap;color:#e6e8f0;font-weight:400');
   var sep = el('span', 'opacity:.35;color:#e6e8f0', '|');
   var swap = link(other.href, other.text + ' ↗', 'font-weight:500');
-  var close = el('button',
-    'all:unset;cursor:pointer;padding:0 2px 0 4px;opacity:.6;font-size:15px;line-height:1;color:#e6e8f0', '×');
-  close.setAttribute('aria-label', 'Hide');
-  close.title = 'Hide';
-  close.onclick = function () {
-    bar.remove();
-    try { sessionStorage.setItem(KEY, '1'); } catch (e) { /* ignore */ }
-  };
 
   // pool button on top, price | other page | × below; one row in the fork header
   var row2 = el('div', 'display:flex;align-items:center;gap:10px');
-  row2.appendChild(price); row2.appendChild(sep); row2.appendChild(swap); row2.appendChild(close);
+  row2.appendChild(price); row2.appendChild(sep); row2.appendChild(swap);
   bar.appendChild(pool); bar.appendChild(row2);
   // fork page on a wide screen (≥1200 px: title + pill with price + network controls fit): sit in
   // the header right after the "ECX Fork Watch" title
