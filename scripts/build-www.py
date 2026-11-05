@@ -38,8 +38,8 @@ padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font:12
 # The AGPL's source offer and the Mempool trademark policy's attribution, at the end of every page (2026-11-05).
 SOURCE_URL = "https://github.com/Wired4ncer/ecx-explorer-source"
 # Sets the chosen skin before first paint. Accepts only the five names (fw-bar.js and fw-mempool.css hold the rest).
-SKIN_BOOT = """<script id="ecx-skin-boot">(function(){var k=['retro','scifi','matrix','black-rose'],v=null;
-try{v=new URLSearchParams(location.search).get('skin')||localStorage.getItem('ecx-explorer-skin')}catch(e){}
+SKIN_BOOT = """<script id="ecx-skin-boot">(function(){var k=['retro','scifi','matrix','black-rose'],v=null,q=null;
+try{q=new URLSearchParams(location.search).get('skin');v=k.indexOf(q)>=0||q==='default'?q:localStorage.getItem('ecx-explorer-skin')}catch(e){}
 if(k.indexOf(v)>=0)document.documentElement.setAttribute('data-ecx-skin',v)})();</script>"""
 LEGAL = f"""<div id="ecx-legal" style="display:none;padding:12px 16px 72px;text-align:center;font:12px/1.5 sans-serif;color:#9aa1ad">
 This site runs modified software derived from the source code for mempool.space (AGPL-3.0). It is not affiliated with or

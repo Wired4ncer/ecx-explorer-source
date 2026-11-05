@@ -5,7 +5,7 @@
 /* Five skins, the pool site's own palettes (frontend/src/skins.css, dark blocks; 2026-11-05). Default = no attribute.
    fw-bar.js holds the picker; an inline script in the page's head sets the attribute before first paint. */
 html:root {
-  --ecx-bg: #0d0d0e; --ecx-elevated: #171615; --ecx-card: #121110; --ecx-hover: #1c1a18; --ecx-border: #2e2a24;
+  --ecx-accent-rgb: 247, 148, 29; --ecx-bg: #0d0d0e; --ecx-elevated: #171615; --ecx-card: #121110; --ecx-hover: #1c1a18; --ecx-border: #2e2a24;
   --ecx-accent: #f7941d; --ecx-accent-dim: #8a5514; --ecx-accent-2: #ffb347; --ecx-on-accent: #1a1000;
   --ecx-side: #2a2520; --ecx-side-dark: #120f0c; --ecx-alt: #9a3412; --ecx-alert: #2b2412; --ecx-skeleton: #4b453c;
   --ecx-glow: rgba(247, 148, 29, 0.10); --ecx-fade-rgb: 23, 22, 21; --ecx-fee: #fff1d6;
@@ -33,31 +33,31 @@ html:root {
   --search-button: var(--ecx-accent);
   --search-button-border: var(--ecx-accent-dim);
   --search-button-focus: var(--ecx-accent-2);
-  --search-button-shadow: rgba(var(--ecx-fade-rgb), .5);
+  --search-button-shadow: rgba(var(--ecx-accent-rgb), .5);
 }
 html:root[data-ecx-skin="retro"] {
-  --ecx-bg: #120c06; --ecx-elevated: #1e1409; --ecx-card: #180f06; --ecx-hover: #2a1c0c; --ecx-border: #4a3313;
+  --ecx-accent-rgb: 255, 176, 0; --ecx-bg: #120c06; --ecx-elevated: #1e1409; --ecx-card: #180f06; --ecx-hover: #2a1c0c; --ecx-border: #4a3313;
   --ecx-accent: #ffb000; --ecx-accent-dim: #7a5210; --ecx-accent-2: #ffd166; --ecx-on-accent: #1a0f00;
   --ecx-side: #33230f; --ecx-side-dark: #150e06; --ecx-alt: #8a5a00; --ecx-alert: #2a1d06; --ecx-skeleton: #5a4120;
   --ecx-glow: rgba(255, 176, 0, 0.10); --ecx-fade-rgb: 30, 20, 9; --ecx-fee: #fff4d6;
   --fg: #f5c97a; --transparent-fg: #f5c97abb; --ecx-font: "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 html:root[data-ecx-skin="scifi"] {
-  --ecx-bg: #060a14; --ecx-elevated: #0d1524; --ecx-card: #0a1120; --ecx-hover: #13203a; --ecx-border: #1d3350;
+  --ecx-accent-rgb: 63, 216, 240; --ecx-bg: #060a14; --ecx-elevated: #0d1524; --ecx-card: #0a1120; --ecx-hover: #13203a; --ecx-border: #1d3350;
   --ecx-accent: #3fd8f0; --ecx-accent-dim: #1a6f80; --ecx-accent-2: #7ef0ff; --ecx-on-accent: #01131a;
   --ecx-side: #13233a; --ecx-side-dark: #070e1a; --ecx-alt: #0e5a6a; --ecx-alert: #0d2230; --ecx-skeleton: #2c4a6e;
   --ecx-glow: rgba(63, 216, 240, 0.10); --ecx-fade-rgb: 13, 21, 36; --ecx-fee: #e6fbff;
   --fg: #e6f4ff; --transparent-fg: #e6f4ffbb;
 }
 html:root[data-ecx-skin="matrix"] {
-  --ecx-bg: #000000; --ecx-elevated: #071a0e; --ecx-card: #04120a; --ecx-hover: #0c2615; --ecx-border: #0f4a26;
+  --ecx-accent-rgb: 0, 255, 65; --ecx-bg: #000000; --ecx-elevated: #071a0e; --ecx-card: #04120a; --ecx-hover: #0c2615; --ecx-border: #0f4a26;
   --ecx-accent: #00ff41; --ecx-accent-dim: #0a7a2c; --ecx-accent-2: #7dff9e; --ecx-on-accent: #001a06;
   --ecx-side: #0a2a15; --ecx-side-dark: #03100a; --ecx-alt: #0a5c20; --ecx-alert: #16200a; --ecx-skeleton: #17643a;
   --ecx-glow: rgba(0, 255, 65, 0.08); --ecx-fade-rgb: 7, 26, 14; --ecx-fee: #eaffef;
   --fg: #b7f7c4; --transparent-fg: #b7f7c4bb; --ecx-font: "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 html:root[data-ecx-skin="black-rose"] {
-  --ecx-bg: #0b0708; --ecx-elevated: #1a0e11; --ecx-card: #140b0d; --ecx-hover: #261418; --ecx-border: #5a1f29;
+  --ecx-accent-rgb: 239, 58, 80; --ecx-bg: #0b0708; --ecx-elevated: #1a0e11; --ecx-card: #140b0d; --ecx-hover: #261418; --ecx-border: #5a1f29;
   --ecx-accent: #ef3a50; --ecx-accent-dim: #7a1f2b; --ecx-accent-2: #ff7d8c; --ecx-on-accent: #170306;
   --ecx-side: #2a1319; --ecx-side-dark: #12080a; --ecx-alt: #7a1f2b; --ecx-alert: #2a1d0c; --ecx-skeleton: #6b2a35;
   --ecx-glow: rgba(239, 58, 80, 0.10); --ecx-fade-rgb: 26, 14, 17; --ecx-fee: #fff0f2;
