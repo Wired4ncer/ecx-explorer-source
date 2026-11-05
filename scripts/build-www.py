@@ -99,7 +99,7 @@ DAA_SUBS = [
     ("i.remainingBlocks>1870?", "i.remainingBlocks>267?"),
     # and keeps each one square at any width.
     ('"viewBox","0 0 224 9"', '"viewBox","0 0 72 4"'),
-    ("const r=t%9,l=Math.floor(t/9),c=i%9,d=Math.floor(i/9);", "const r=t%4,l=Math.floor(t/4),c=i%4,d=Math.floor(i/4);"),
+    ("const r=t%9,l=Math.floor(t/9),c=i%9,d=Math.floor(i/9);", "if(t>i)return[];const r=t%4,l=Math.floor(t/4),c=i%4,d=Math.floor(i/4);"),   # empty range: stock drew a negative height
     ("g.push({x:l,y:r,w:1,h:9-r,status:o,expected:s})", "g.push({x:l,y:r,w:1,h:4-r,status:o,expected:s})"),
     ("g.push({x:l+1,y:0,w:d-l-1,h:9,status:o,expected:s})", "g.push({x:l+1,y:0,w:d-l-1,h:4,status:o,expected:s})"),
 ]
