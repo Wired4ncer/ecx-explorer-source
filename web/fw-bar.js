@@ -208,18 +208,23 @@
   // fork page on a wide screen (≥1200 px: title + pill with price + network controls fit): sit in
   // the header right after the "ECX Fork Watch" title
   // (the navbar is flex with space-between; margin-right:auto keeps the network controls on the right).
-  // The explorer's header is full (menu icons + search), so there it stays floating bottom-right.
+  // Explorer on a wide screen (2026-11-05): one line in the top bar, between the menu icons and the search box.
+  // Smaller screens have no room, so it floats. Angular draws the bar after this script starts, so wait for it.
   var brand = onFork && document.querySelector('.app-header .navbar-brand');
   var wide = window.matchMedia && matchMedia('(min-width: 1200px)').matches;
-  if (brand && wide) {
+  function inline(after, margin) {
     bar.style.position = 'static';
-    bar.style.margin = '0 auto 0 18px';
+    bar.style.margin = margin;
     bar.style.padding = '4px 8px 4px 5px';
     bar.style.boxShadow = 'none';
     bar.style.maxWidth = 'none';
+    bar.style.flexDirection = 'row';
     bar.style.flexWrap = 'nowrap';
-    brand.parentNode.insertBefore(bar, brand.nextSibling);
-  } else {
+    bar.style.flex = 'none';
+    bar.style.whiteSpace = 'nowrap';
+    after.parentNode.insertBefore(bar, after.nextSibling);
+  }
+  function floating() {
     bar.style.flexDirection = 'column';
     bar.style.alignItems = 'center';
     bar.style.gap = '6px';
@@ -227,6 +232,19 @@
     // phones: mempool has a bottom menu bar (~56 px) — sit above it
     if (window.matchMedia && matchMedia('(max-width: 575px)').matches) bar.style.bottom = '72px';
     document.body.appendChild(bar);
+  }
+  if (brand && wide) {
+    inline(brand, '0 auto 0 18px');
+  } else if (!onFork && window.matchMedia && matchMedia('(min-width: 1380px)').matches) {   // under this the search button is cut off
+    var tries = 0;
+    (function wait() {
+      var menu = document.querySelector('#navbarCollapse .navbar-nav');
+      if (menu) { inline(menu, '0 12px'); return; }
+      if (++tries > 50) { floating(); return; }
+      setTimeout(wait, 200);
+    })();
+  } else {
+    floating();
   }
 
   function num(x) { return typeof x === 'number' && isFinite(x); }

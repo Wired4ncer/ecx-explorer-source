@@ -20,6 +20,7 @@ The site runs these unmodified, pinned images with the changes below applied on 
 | `scripts/build-www.py` | Patches the frontend tree: ECX name and icons, ECX units, pool list, link previews, marks and logo files removed |
 | `web/guard.conf` | The read-only nginx in front of the site: GET and HEAD only, adds the two files below |
 | `web/fw-bar.js`, `web/fw-mempool.css` | The price bar and the ECX look |
+| `web/explorer-logo.png` | The eCPool Explorer logo. It is ours and is not covered by the code license |
 | `pools/` | ECX mining pool list |
 
 Pool logos are copied into the frontend by `build-www.py`. They belong to their pools.

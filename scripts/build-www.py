@@ -18,7 +18,7 @@ from pathlib import Path
 stock, out, favs, pools, logos = map(Path, sys.argv[1:6])
 rev = sys.argv[6] if len(sys.argv) > 6 else "1"
 NAME = "eCash Mainnet"
-TITLE = f"{NAME} Explorer"
+TITLE = "eCPool Explorer"
 BUNDLE = f"main.ecx-mainnet-{rev}.js"
 HOST = "explorer.ecpool.tech"
 PREVIEW = f"https://{HOST}/resources/favicons-ecx/android-chrome-512x512.png"
@@ -27,9 +27,8 @@ DESC = "Explorer for the eCash (ECX) mainnet: blocks, transactions, fees and min
 STYLE = f"""<style id="ecx-brand">
 /* ECX mainnet branding: hide mempool's inline wordmark, show our icon + name (2026-10-27) */
 .navbar-brand app-svg-images.mempool-logo svg, .navbar-brand app-svg-images[name="officialMempoolSpace"] svg {{ display:none !important; }}
-.navbar-brand app-svg-images.mempool-logo, .navbar-brand app-svg-images[name="officialMempoolSpace"] {{ display:inline-flex !important; align-items:center; gap:.45rem; width:auto !important; height:36px !important; }}
-.navbar-brand app-svg-images.mempool-logo::before, .navbar-brand app-svg-images[name="officialMempoolSpace"]::before {{ content:""; width:28px; height:28px; border-radius:6px; background:url(/resources/favicons-ecx/favicon-32x32.png) center/contain no-repeat; }}
-.navbar-brand app-svg-images.mempool-logo::after, .navbar-brand app-svg-images[name="officialMempoolSpace"]::after {{ content:"{NAME}"; font-weight:700; font-size:1.25rem; color:#fff; white-space:nowrap; }}
+.navbar-brand app-svg-images.mempool-logo, .navbar-brand app-svg-images[name="officialMempoolSpace"] {{ display:inline-flex !important; align-items:center; gap:.5rem; width:auto !important; height:50px !important; }}
+.navbar-brand app-svg-images.mempool-logo::before, .navbar-brand app-svg-images[name="officialMempoolSpace"]::before {{ content:""; flex:none; width:186px; height:50px; background:url(/resources/favicons-ecx/explorer-logo.png) left center/contain no-repeat; }}
 </style>"""
 
 NOTE = """<style id="ecx-note-style">#ecx-note{position:fixed;left:12px;bottom:12px;z-index:2147482000;max-width:calc(100vw - 24px);
