@@ -119,6 +119,21 @@ html[data-ecx-skin] .bitcoin-block.mempool-block::after {
   filter: var(--ecx-wait-back);
 }
 
+/* Difficulty bar: 288 small squares, 72 x 4 (build-www.py sets the grid). The ratio keeps them square at any width;
+   the mask cuts a 1 px gap around each one. */
+.epoch-progress { height: auto !important; }
+.epoch-blocks {
+  height: auto !important;
+  aspect-ratio: 18 / 1;
+  background: var(--ecx-side) !important;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1px), transparent calc(100% - 1px)), linear-gradient(to bottom, #000 calc(100% - 1px), transparent calc(100% - 1px));
+  mask-image: linear-gradient(to right, #000 calc(100% - 1px), transparent calc(100% - 1px)), linear-gradient(to bottom, #000 calc(100% - 1px), transparent calc(100% - 1px));
+  -webkit-mask-size: calc(100% / 72) 100%, 100% 25%;
+  mask-size: calc(100% / 72) 100%, 100% 25%;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
 /* boxes: rounded, a hairline */
 .box, .card {
   border: 1px solid var(--ecx-border) !important;

@@ -97,7 +97,11 @@ DAA_SUBS = [
     ("this.currentIndex<2015&&", "this.currentIndex<287&&"),
     (',2105,"remaining",!1)', ',287,"remaining",!1)'),
     ("i.remainingBlocks>1870?", "i.remainingBlocks>267?"),
-    ('"viewBox","0 0 224 9"', '"viewBox","0 0 32 9"'),
+    # and keeps each one square at any width.
+    ('"viewBox","0 0 224 9"', '"viewBox","0 0 72 4"'),
+    ("const r=t%9,l=Math.floor(t/9),c=i%9,d=Math.floor(i/9);", "const r=t%4,l=Math.floor(t/4),c=i%4,d=Math.floor(i/4);"),
+    ("g.push({x:l,y:r,w:1,h:9-r,status:o,expected:s})", "g.push({x:l,y:r,w:1,h:4-r,status:o,expected:s})"),
+    ("g.push({x:l+1,y:0,w:d-l-1,h:9,status:o,expected:s})", "g.push({x:l+1,y:0,w:d-l-1,h:4,status:o,expected:s})"),
 ]
 
 # Empty `out` but KEEP the directory itself: the running web container bind-mounts it, and a
