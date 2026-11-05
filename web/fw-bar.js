@@ -191,7 +191,7 @@
   var sep = el('span', 'opacity:.35;color:#e6e8f0', '|');
   var swap = link(other.href, other.text + ' ↗', 'font-weight:500');
 
-  // pool button on top, price | other page | × below; one row in the fork header
+  // pool button on top, price | other page below; one row in the fork header
   var row2 = el('div', 'display:flex;align-items:center;gap:10px');
   row2.appendChild(price); row2.appendChild(sep); row2.appendChild(swap);
   bar.appendChild(pool); bar.appendChild(row2);
@@ -229,7 +229,15 @@
     var tries = 0;
     (function wait() {
       var menu = document.querySelector('#navbarCollapse .navbar-nav');
-      if (menu) { inline(menu, '0 12px'); return; }
+      if (menu) {
+        inline(menu, '0 12px');
+        // The banner must stay: if the app redraws its top bar, put it back.
+        setInterval(function () {
+          var m = document.querySelector('#navbarCollapse .navbar-nav');
+          if (m && !document.contains(bar)) inline(m, '0 12px');
+        }, 2000);
+        return;
+      }
       if (++tries > 50) { floating(); return; }
       setTimeout(wait, 200);
     })();
@@ -243,11 +251,29 @@
                                               maximumFractionDigits: v >= 1 ? 2 : 4 });
   }
 
+  // The average of wECX on Jupiter and native ECX on Neoxa: the API's ecxAvg, the number the pool site's "≈ $"
+  // lines and this explorer's USD values use. Falls back to wECX alone (2026-11-05).
+  function fresh(p, now) { return p && num(p.usd) && p.usd > 0 && num(p.at) && now - p.at <= 600 && p.at <= now + 60; }
+  function pick(d, now) {
+    var w = d && d.ecx, n = d && d.ecxNeoxa, a = d && d.ecxAvg;
+    if (!fresh(a, now)) return fresh(w, now) ? { usd: w.usd, at: w.at, change24h: w.change24h, avg: false } : null;
+    var both = a.n === 2 && !a.neoxaDropped && fresh(w, now) && fresh(n, now);
+    var r = { usd: a.usd, at: a.at, avg: both };
+    // Change of the average: both prices a day ago, from each one's own change.
+    if (both && num(w.change24h) && num(n.change24h)) {
+      var was = (w.usd / (1 + w.change24h / 100) + n.usd / (1 + n.change24h / 100)) / 2;
+      r.change24h = ((w.usd + n.usd) / 2 / was - 1) * 100;
+    } else if (!both && fresh(w, now)) {
+      r.change24h = w.change24h;
+    }
+    return r;
+  }
+
   function show(d) {
-    var e = d && d.ecx;
     // same freshness rule as the pool site: older than 10 min = no price at all
     var now = Date.now() / 1000;
-    if (!e || !num(e.usd) || e.usd <= 0 || !num(e.at) || now - e.at > 600 || e.at > now + 60) {
+    var e = pick(d, now);
+    if (!e) {
       price.style.display = 'none';
       sep.style.display = 'none';           // no "|" in front of the link when there is no price
       return;
@@ -260,7 +286,8 @@
       price.appendChild(el('span', 'margin-left:6px;color:' + (up ? '#3fd47c' : '#ff6b6b'),
         (up ? '▲' : '▼') + Math.abs(e.change24h).toFixed(1) + '% 24h'));
     }
-    price.title = 'wECX (ECX on Solana) on Jupiter — open the token page. Price via ecpool.tech, updated ' +
+    price.title = (e.avg ? 'Average of wECX on Jupiter and ECX on Neoxa' : 'wECX on Jupiter') +
+      '. Opens the wECX token page. Price via ecpool.tech, updated ' +
       new Date(e.at * 1000).toLocaleTimeString();
     price.style.display = '';
     sep.style.display = '';
