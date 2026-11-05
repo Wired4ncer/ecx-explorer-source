@@ -256,15 +256,13 @@
   function fresh(p, now) { return p && num(p.usd) && p.usd > 0 && num(p.at) && now - p.at <= 600 && p.at <= now + 60; }
   function pick(d, now) {
     var w = d && d.ecx, n = d && d.ecxNeoxa, a = d && d.ecxAvg;
-    if (!fresh(a, now)) return fresh(w, now) ? { usd: w.usd, at: w.at, change24h: w.change24h, avg: false } : null;
-    var both = a.n === 2 && !a.neoxaDropped && fresh(w, now) && fresh(n, now);
-    var r = { usd: a.usd, at: a.at, avg: both };
+    var wecx = fresh(w, now) ? { usd: w.usd, at: w.at, change24h: w.change24h, avg: false } : null;
+    if (!fresh(a, now) || a.n !== 2 || a.neoxaDropped || !fresh(w, now) || !fresh(n, now)) return wecx;
+    var r = { usd: a.usd, at: a.at, avg: true };
     // Change of the average: both prices a day ago, from each one's own change.
-    if (both && num(w.change24h) && num(n.change24h)) {
+    if (num(w.change24h) && num(n.change24h) && w.change24h > -100 && n.change24h > -100) {
       var was = (w.usd / (1 + w.change24h / 100) + n.usd / (1 + n.change24h / 100)) / 2;
       r.change24h = ((w.usd + n.usd) / 2 / was - 1) * 100;
-    } else if (!both && fresh(w, now)) {
-      r.change24h = w.change24h;
     }
     return r;
   }
