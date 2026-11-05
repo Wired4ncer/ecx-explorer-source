@@ -38,9 +38,12 @@ padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font:12
 # The AGPL's source offer and the Mempool trademark policy's attribution, at the end of every page (2026-11-05).
 SOURCE_URL = "https://github.com/Wired4ncer/ecx-explorer-source"
 # Sets the chosen skin before first paint. Accepts only the five names (fw-bar.js and fw-mempool.css hold the rest).
+# Also: USD is the only currency with a price (the feed is USD only, others read -1), so anyone with another one saved
+# goes back to USD before the app reads it, and the HIDE style below removes the currency list.
 SKIN_BOOT = """<script id="ecx-skin-boot">(function(){var k=['retro','scifi','matrix','black-rose'],v=null,q=null;
 try{q=new URLSearchParams(location.search).get('skin');v=k.indexOf(q)>=0||q==='default'?q:localStorage.getItem('ecx-explorer-skin')}catch(e){}
-if(k.indexOf(v)>=0)document.documentElement.setAttribute('data-ecx-skin',v)})();</script>"""
+if(k.indexOf(v)>=0)document.documentElement.setAttribute('data-ecx-skin',v);
+try{var f=localStorage.getItem('fiat-preference');if(f&&f!=='USD')localStorage.setItem('fiat-preference','USD')}catch(e){}})();</script>"""
 LEGAL = f"""<div id="ecx-legal" style="display:none;padding:12px 16px 72px;text-align:center;font:12px/1.5 sans-serif;color:#9aa1ad">
 This site runs modified software derived from the source code for mempool.space (AGPL-3.0). It is not affiliated with or
 endorsed by The Mempool Open Source Project. <a href="{SOURCE_URL}" style="color:#d9a066" rel="noopener">Source code and our changes</a>.</div>
@@ -48,7 +51,7 @@ endorsed by The Mempool Open Source Project. <a href="{SOURCE_URL}" style="color
 if(f&&l.parentNode!==f){{f.appendChild(l);l.style.display='block'}}}}new MutationObserver(p).observe(document.body,{{childList:true,subtree:true}});p()}})();</script>"""
 # Trademark policy: modified software must not carry the project's logos, and their pages are not this site's.
 HIDE = """<style id="ecx-marks">#btn-about,.social-links,[class*="explore-tagline"],app-global-footer app-svg-images[name="mempoolSpace"],
-a[href$="/about"],a[href$="/terms-of-service"],a[href$="/privacy-policy"],a[href$="/trademark-policy"],a[href$="host-my-own-instance-raspberry-pi"]{display:none !important}</style>"""
+select[formcontrolname="fiat"],a[href$="/about"],a[href$="/terms-of-service"],a[href$="/privacy-policy"],a[href$="/trademark-policy"],a[href$="host-my-own-instance-raspberry-pi"]{display:none !important}</style>"""
 SEARCH_PLACEHOLDER = "Search blocks and transactions"
 SEARCH_RE = re.compile(r'n="[^"]*",_="([^"]*)",\[\["searchInput",""\]')
 GOGGLES_RE = re.compile(r'Mempool Goggles(?:\\u2122|\u2122)?')
