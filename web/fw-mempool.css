@@ -2,69 +2,134 @@
    of the work is overriding them with the ecpool.tech palette (bg #0d0d0e, surface #171615, border #2e2a24,
    accent #f7941d, accent-2 #ffb347). html:root beats mempool's :root and its optional theme sheets. */
 
+/* Five skins, the pool site's own palettes (frontend/src/skins.css, dark blocks; 2026-11-05). Default = no attribute.
+   fw-bar.js holds the picker; an inline script in the page's head sets the attribute before first paint. */
 html:root {
-  --bg: #0d0d0e;
+  --ecx-bg: #0d0d0e; --ecx-elevated: #171615; --ecx-card: #121110; --ecx-hover: #1c1a18; --ecx-border: #2e2a24;
+  --ecx-accent: #f7941d; --ecx-accent-dim: #8a5514; --ecx-accent-2: #ffb347; --ecx-on-accent: #1a1000;
+  --ecx-side: #2a2520; --ecx-side-dark: #120f0c; --ecx-alt: #9a3412; --ecx-alert: #2b2412; --ecx-skeleton: #4b453c;
+  --ecx-glow: rgba(247, 148, 29, 0.10); --ecx-fade-rgb: 23, 22, 21; --ecx-fee: #fff1d6;
+
+  --bg: var(--ecx-bg);
   --active-bg: #000000;
-  --hover-bg: #1c1a18;
-  --nav-bg: #0d0d0e;
-  --navbar-bg: #171615;
-  --title-fg: #f7941d;
-  --primary: #f7941d;
-  --secondary: #2a2520;
-  --tertiary: #8a5514;
-  --info: #ffb347;
-  --link-color: #ffb347;
-  --link-hover-color: #f7941d;
-  --box-bg: #171615;
-  --stat-box-bg: #121110;
-  --skeleton-bg: #2e2a24;
-  --skeleton-bg-light: #4b453c;
-  --alert-bg: #2b2412;
-  --fade-out-box-bg-start: rgba(23, 22, 21, 0);
-  --fade-out-box-bg-end: rgba(23, 22, 21, 1);
-  --mainnet-alt: #9a3412;          /* 2nd colour of the mined-block gradient (with --primary) */
-  --search-button: #f7941d;
-  --search-button-border: #8a5514;
-  --search-button-focus: #ffb347;
-  --search-button-shadow: #f7941d80;
+  --hover-bg: var(--ecx-hover);
+  --nav-bg: var(--ecx-bg);
+  --navbar-bg: var(--ecx-elevated);
+  --title-fg: var(--ecx-accent);
+  --primary: var(--ecx-accent);
+  --secondary: var(--ecx-side);
+  --tertiary: var(--ecx-accent-dim);
+  --info: var(--ecx-accent-2);
+  --link-color: var(--ecx-accent-2);
+  --link-hover-color: var(--ecx-accent);
+  --box-bg: var(--ecx-elevated);
+  --stat-box-bg: var(--ecx-card);
+  --skeleton-bg: var(--ecx-border);
+  --skeleton-bg-light: var(--ecx-skeleton);
+  --alert-bg: var(--ecx-alert);
+  --fade-out-box-bg-start: rgba(var(--ecx-fade-rgb), 0);
+  --fade-out-box-bg-end: rgba(var(--ecx-fade-rgb), 1);
+  --mainnet-alt: var(--ecx-alt);   /* 2nd colour of the mined-block gradient (with --primary) */
+  --search-button: var(--ecx-accent);
+  --search-button-border: var(--ecx-accent-dim);
+  --search-button-focus: var(--ecx-accent-2);
+  --search-button-shadow: rgba(var(--ecx-fade-rgb), .5);
+}
+html:root[data-ecx-skin="retro"] {
+  --ecx-bg: #120c06; --ecx-elevated: #1e1409; --ecx-card: #180f06; --ecx-hover: #2a1c0c; --ecx-border: #4a3313;
+  --ecx-accent: #ffb000; --ecx-accent-dim: #7a5210; --ecx-accent-2: #ffd166; --ecx-on-accent: #1a0f00;
+  --ecx-side: #33230f; --ecx-side-dark: #150e06; --ecx-alt: #8a5a00; --ecx-alert: #2a1d06; --ecx-skeleton: #5a4120;
+  --ecx-glow: rgba(255, 176, 0, 0.10); --ecx-fade-rgb: 30, 20, 9; --ecx-fee: #fff4d6;
+  --fg: #f5c97a; --transparent-fg: #f5c97abb; --ecx-font: "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+html:root[data-ecx-skin="scifi"] {
+  --ecx-bg: #060a14; --ecx-elevated: #0d1524; --ecx-card: #0a1120; --ecx-hover: #13203a; --ecx-border: #1d3350;
+  --ecx-accent: #3fd8f0; --ecx-accent-dim: #1a6f80; --ecx-accent-2: #7ef0ff; --ecx-on-accent: #01131a;
+  --ecx-side: #13233a; --ecx-side-dark: #070e1a; --ecx-alt: #0e5a6a; --ecx-alert: #0d2230; --ecx-skeleton: #2c4a6e;
+  --ecx-glow: rgba(63, 216, 240, 0.10); --ecx-fade-rgb: 13, 21, 36; --ecx-fee: #e6fbff;
+  --fg: #e6f4ff; --transparent-fg: #e6f4ffbb;
+}
+html:root[data-ecx-skin="matrix"] {
+  --ecx-bg: #000000; --ecx-elevated: #071a0e; --ecx-card: #04120a; --ecx-hover: #0c2615; --ecx-border: #0f4a26;
+  --ecx-accent: #00ff41; --ecx-accent-dim: #0a7a2c; --ecx-accent-2: #7dff9e; --ecx-on-accent: #001a06;
+  --ecx-side: #0a2a15; --ecx-side-dark: #03100a; --ecx-alt: #0a5c20; --ecx-alert: #16200a; --ecx-skeleton: #17643a;
+  --ecx-glow: rgba(0, 255, 65, 0.08); --ecx-fade-rgb: 7, 26, 14; --ecx-fee: #eaffef;
+  --fg: #b7f7c4; --transparent-fg: #b7f7c4bb; --ecx-font: "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+html:root[data-ecx-skin="black-rose"] {
+  --ecx-bg: #0b0708; --ecx-elevated: #1a0e11; --ecx-card: #140b0d; --ecx-hover: #261418; --ecx-border: #5a1f29;
+  --ecx-accent: #ef3a50; --ecx-accent-dim: #7a1f2b; --ecx-accent-2: #ff7d8c; --ecx-on-accent: #170306;
+  --ecx-side: #2a1319; --ecx-side-dark: #12080a; --ecx-alt: #7a1f2b; --ecx-alert: #2a1d0c; --ecx-skeleton: #6b2a35;
+  --ecx-glow: rgba(239, 58, 80, 0.10); --ecx-fade-rgb: 26, 14, 17; --ecx-fee: #fff0f2;
+  --fg: #f3e9e6; --transparent-fg: #f3e9e6bb;
+}
+html[data-ecx-skin="retro"] body, html[data-ecx-skin="matrix"] body { font-family: var(--ecx-font) !important; }
+/* The picker that replaces the stock theme list; it copies the stock list's classes, so it looks the same. */
+.ecx-skin-select { width: auto; }
+/* Retro's scanlines: same 3 px pitch as the pool site. */
+html[data-ecx-skin="retro"] body::after {
+  content: ""; position: fixed; inset: 0; z-index: 2147482000; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .10) 0, rgba(0, 0, 0, .10) 1px, transparent 1px, transparent 3px);
 }
 
 body {
   background:
-    radial-gradient(1400px 600px at 50% -250px, rgba(247, 148, 29, 0.10), transparent 70%),
-    #0d0d0e !important;
+    radial-gradient(1400px 600px at 50% -250px, var(--ecx-glow), transparent 70%),
+    var(--ecx-bg) !important;
 }
 
-/* top bar: dark, thin orange line under it */
+/* top bar: dark, thin accent line under it */
 .navbar, nav.navbar {
-  background: #121110 !important;
-  border-bottom: 1px solid #8a5514;
+  background: var(--ecx-card) !important;
+  border-bottom: 1px solid var(--ecx-accent-dim);
 }
 
 /* block cubes: their face colours come from mempool itself (partly from --primary above); only the
-   cube sides get warm dark tones */
+   cube sides get the skin's dark tones */
 .bitcoin-block::after {
-  background-color: #2a2520 !important;
+  background-color: var(--ecx-side) !important;
 }
 .bitcoin-block::before {
-  background-color: #120f0c !important;
+  background-color: var(--ecx-side-dark) !important;
 }
-/* the fee-range line in each block is yellow by default — unreadable on orange */
+/* the fee-range line in each block is yellow by default — unreadable on the accent colour */
 .bitcoin-block .fee-span {
-  color: #fff1d6 !important;
+  color: var(--ecx-fee) !important;
 }
 
-/* boxes: rounded, a warm hairline */
+   green. Set on the block only: the buttons, links and bars keep the neon. */
+html[data-ecx-skin="matrix"] .bitcoin-block {
+  --primary: #008a24;
+  --mainnet-alt: #06481a;
+}
+
+   2026-11-05). Their colours come from the fee level and are set inline, so a hue turn moves them all together and the
+   fee levels still look different from each other. Green stays on Default. White text is unaffected. */
+html[data-ecx-skin="retro"] { --ecx-wait: hue-rotate(-135deg); --ecx-wait-back: hue-rotate(135deg); }
+html[data-ecx-skin="scifi"] { --ecx-wait: hue-rotate(115deg); --ecx-wait-back: hue-rotate(-115deg); }
+html[data-ecx-skin="matrix"] { --ecx-wait: hue-rotate(25deg); --ecx-wait-back: hue-rotate(-25deg); }
+html[data-ecx-skin="black-rose"] { --ecx-wait: hue-rotate(160deg); --ecx-wait-back: hue-rotate(-160deg); }
+html[data-ecx-skin] .bitcoin-block.mempool-block,
+html[data-ecx-skin] .fee-progress-bar {
+  filter: var(--ecx-wait);
+}
+/* The cube's sides are drawn inside the block, so turn them back: they keep the skin's own dark tones. */
+html[data-ecx-skin] .bitcoin-block.mempool-block::before,
+html[data-ecx-skin] .bitcoin-block.mempool-block::after {
+  filter: var(--ecx-wait-back);
+}
+
+/* boxes: rounded, a hairline */
 .box, .card {
-  border: 1px solid #2e2a24 !important;
+  border: 1px solid var(--ecx-border) !important;
   border-radius: 10px !important;
 }
 
-/* search button + primary buttons in the pool orange, dark text */
+/* search button + primary buttons in the accent colour, dark text */
 .btn-purple, .btn-primary {
-  background-color: #f7941d !important;
-  border-color: #8a5514 !important;
-  color: #1a1000 !important;
+  background-color: var(--ecx-accent) !important;
+  border-color: var(--ecx-accent-dim) !important;
+  color: var(--ecx-on-accent) !important;
 }
 
    neon glow that flickers like a live wire, and bolts crackling across its face (SVG added by fw-bar.js).

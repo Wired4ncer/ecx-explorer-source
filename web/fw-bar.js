@@ -176,14 +176,14 @@
   var bar = el('div',
     'position:fixed;right:12px;bottom:12px;z-index:2147483000;display:flex;align-items:center;' +
     'gap:10px;flex-wrap:wrap;max-width:calc(100vw - 24px);box-sizing:border-box;padding:7px 10px 7px 12px;' +
-    'border-radius:12px;background:rgba(23,22,21,.95);color:#e6e8f0;border:1px solid #8a5514;' +
+    'border-radius:12px;background:var(--ecx-elevated,#171615);color:#e6e8f0;border:1px solid var(--ecx-accent-dim,#8a5514);' +
     'box-shadow:0 4px 18px rgba(0,0,0,.35);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif');
   bar.id = 'fw-bar';
 
   // pool button in ecpool.tech's default theme colours (--accent-2 → --accent, text --on-accent)
   var pool = link('https://ecpool.tech/', '⛏ Mine ECX at eCPool.tech',
-    'color:#1a1000;background:linear-gradient(180deg,#ffb347,#f7941d);padding:4px 11px;' +
-    'border-radius:999px;font-weight:700;white-space:nowrap;box-shadow:0 0 0 1px rgba(255,179,71,.35),0 2px 10px rgba(247,148,29,.45)');
+    'color:var(--ecx-on-accent,#1a1000);background:linear-gradient(180deg,var(--ecx-accent-2,#ffb347),var(--ecx-accent,#f7941d));padding:4px 11px;' +
+    'border-radius:999px;font-weight:700;white-space:nowrap;box-shadow:0 0 0 1px rgba(255,179,71,.35),0 2px 10px var(--ecx-glow,rgba(247,148,29,.45))');
   // the price links to wECX on Jupiter, same link as the pool site (EarnEstimate.tsx). The mint is fixed
   // can never point people at another token.
   var WECX_MINT = '6ombVv3YMs9qpx1QkycD9XW8HKSfv7vGrCFX3cxCYMVY';
@@ -244,6 +244,41 @@
   } else {
     floating();
   }
+
+  // Skins (2026-11-05): the pool site's five, in place of the stock three. The page's head script applies the stored
+  // one before first paint; the list is fixed here, so a stored or linked value cannot add a name to the page.
+  var SKINS = [['default', 'Default'], ['retro', 'Retro'], ['scifi', 'Sci-Fi'], ['matrix', 'Matrix'], ['black-rose', 'Black Rose']];
+  function skinNow() { return document.documentElement.getAttribute('data-ecx-skin') || 'default'; }
+  function setSkin(id) {
+    if (id === 'default') document.documentElement.removeAttribute('data-ecx-skin');
+    else document.documentElement.setAttribute('data-ecx-skin', id);
+    try { localStorage.setItem('ecx-explorer-skin', id); } catch (e) { /* the choice just lasts until reload */ }
+  }
+  // The app draws the footer twice (desktop and phone), so each stock list gets its own picker.
+  function placeSkinPicker() {
+    document.querySelectorAll('select').forEach(function (stock) {
+      var isStock = false;
+      for (var i = 0; i < stock.options.length; i++) if (stock.options[i].textContent.trim() === 'wiz') isStock = true;
+      if (!isStock || stock.getAttribute('data-ecx-replaced')) return;
+      stock.setAttribute('data-ecx-replaced', '1');
+      var pick = document.createElement('select');
+      pick.className = stock.className + ' ecx-skin-select';
+      pick.setAttribute('aria-label', 'Skin');
+      SKINS.forEach(function (s) {
+        var o = document.createElement('option');
+        o.value = s[0]; o.textContent = s[1];
+        pick.appendChild(o);
+      });
+      pick.value = skinNow();
+      pick.onchange = function () {
+        setSkin(pick.value);
+        document.querySelectorAll('.ecx-skin-select').forEach(function (p) { p.value = pick.value; });
+      };
+      stock.style.display = 'none';
+      stock.parentNode.insertBefore(pick, stock.nextSibling);
+    });
+  }
+  if (!onFork) { placeSkinPicker(); setInterval(placeSkinPicker, 1000); }
 
   function num(x) { return typeof x === 'number' && isFinite(x); }
   function money(v) {

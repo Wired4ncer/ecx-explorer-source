@@ -37,7 +37,11 @@ padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font:12
 
 # The AGPL's source offer and the Mempool trademark policy's attribution, at the end of every page (2026-11-05).
 SOURCE_URL = "https://github.com/Wired4ncer/ecx-explorer-source"
-LEGAL = f"""<div id="ecx-legal" style="display:none;padding:12px 16px 72px;text-align:center;font:12px/1.5 sans-serif;color:#9aa1ad;background:#0d0d0d">
+# Sets the chosen skin before first paint. Accepts only the five names (fw-bar.js and fw-mempool.css hold the rest).
+SKIN_BOOT = """<script id="ecx-skin-boot">(function(){var k=['retro','scifi','matrix','black-rose'],v=null;
+try{v=new URLSearchParams(location.search).get('skin')||localStorage.getItem('ecx-explorer-skin')}catch(e){}
+if(k.indexOf(v)>=0)document.documentElement.setAttribute('data-ecx-skin',v)})();</script>"""
+LEGAL = f"""<div id="ecx-legal" style="display:none;padding:12px 16px 72px;text-align:center;font:12px/1.5 sans-serif;color:#9aa1ad">
 This site runs modified software derived from the source code for mempool.space (AGPL-3.0). It is not affiliated with or
 endorsed by The Mempool Open Source Project. <a href="{SOURCE_URL}" style="color:#d9a066" rel="noopener">Source code and our changes</a>.</div>
 <script>(function(){{var l=document.getElementById('ecx-legal');function p(){{var f=document.querySelector('app-global-footer footer');
@@ -147,7 +151,7 @@ for idx in sorted(out.glob("*/index.html")):
         if html.count(a) != 1:
             sys.exit(f"{idx}: stock tag found {html.count(a)}x, expected 1: {a[:70]}")
         html = html.replace(a, b)
-    html = html.replace("</head>", STYLE + HIDE + "</head>", 1)
+    html = html.replace("</head>", SKIN_BOOT + STYLE + HIDE + "</head>", 1)
     if html.count("</body>") != 1:
         sys.exit(f"{idx}: expected one </body>")
     html = html.replace("</body>", LEGAL + NOTE + "</body>")
