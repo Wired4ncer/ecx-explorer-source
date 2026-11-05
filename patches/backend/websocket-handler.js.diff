@@ -1,0 +1,31 @@
+--- a/api/websocket-handler.js
++++ b/api/websocket-handler.js
+@@ -131,4 +131,15 @@
+                 client.on('message', async (message) => {
+                     try {
++                        const ecxNow = Date.now();
++                        if (message.length > 65536) {
++                            client.close();
++                            return;
++                        }
++                        client['ecxTokens'] = Math.min(20, (client['ecxTokens'] ?? 20) + (ecxNow - (client['ecxLast'] ?? ecxNow)) / 2000);
++                        client['ecxLast'] = ecxNow;
++                        if (client['ecxTokens'] < 1) {
++                            return;
++                        }
++                        client['ecxTokens'] -= 1;
+                         const parsedMessage = JSON.parse(message);
+                         const response = {};
+@@ -374,5 +385,5 @@
+                             }
+                         }
+-                        if (parsedMessage.action === 'init') {
++                        if (parsedMessage.action === 'init' && ecxNow - (client['ecxInit'] ?? 0) >= 30000) {
+                             if (!this.socketData['blocks']?.length || !this.socketData['da'] || !this.socketData['backendInfo'] || !this.socketData['conversions']) {
+                                 this.updateSocketData();
+@@ -381,4 +392,5 @@
+                                 return;
+                             }
++                            client['ecxInit'] = ecxNow;
+                             client.send(this.serializedInitData);
+                         }

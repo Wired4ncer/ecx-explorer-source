@@ -1,0 +1,32 @@
+--- a/api/difficulty-adjustment.js
++++ b/api/difficulty-adjustment.js
+@@ -66,5 +66,5 @@
+ exports.calcBitsDifference = calcBitsDifference;
+ function calcDifficultyAdjustment(DATime, quarterEpochTime, nowSeconds, blockHeight, previousRetarget, network, latestBlockTimestamp) {
+-    const EPOCH_BLOCK_LENGTH = 2016; // Bitcoin mainnet
++    const EPOCH_BLOCK_LENGTH = 288; // ECX: 288-block retarget from 973,728 (ecash v1.1.0)
+     const BLOCK_SECONDS_TARGET = 600; // Bitcoin mainnet
+     const TESTNET_MAX_BLOCK_SECONDS = 1200; // Bitcoin testnet
+@@ -75,5 +75,5 @@
+     const nextRetargetHeight = (blockHeight >= 0) ? blockHeight + remainingBlocks : 0;
+     const expectedBlocks = diffSeconds / BLOCK_SECONDS_TARGET;
+-    const actualTimespan = (blocksInEpoch === 2015 ? latestBlockTimestamp : nowSeconds) - DATime;
++    const actualTimespan = (blocksInEpoch === EPOCH_BLOCK_LENGTH - 1 ? latestBlockTimestamp : nowSeconds) - DATime;
+     let difficultyChange = 0;
+     let timeAvgSecs = blocksInEpoch ? diffSeconds / blocksInEpoch : BLOCK_SECONDS_TARGET;
+@@ -81,5 +81,5 @@
+     // for the first 504 blocks of the epoch, calculate the expected avg block interval
+     // from a sliding window over the last 504 blocks
+-    if (quarterEpochTime && blocksInEpoch < 503) {
++    if (false && quarterEpochTime && blocksInEpoch < 503) { // ECX: off
+         const timeLastEpoch = DATime - quarterEpochTime;
+         const adjustedTimeLastEpoch = timeLastEpoch * (1 + (previousRetarget / 100));
+@@ -89,5 +89,7 @@
+     }
+     else {
+-        difficultyChange = (BLOCK_SECONDS_TARGET / (actualTimespan / (blocksInEpoch + 1)) - 1) * 100;
++        // ECX: target = old * (6T + measured) / 7T, measured clamped to 1/4..4x -> +12 % / -30 % at most
++        const ecxAvg = Math.min(4 * BLOCK_SECONDS_TARGET, Math.max(BLOCK_SECONDS_TARGET / 4, actualTimespan / (blocksInEpoch + 1)));
++        difficultyChange = (7 * BLOCK_SECONDS_TARGET / (6 * BLOCK_SECONDS_TARGET + ecxAvg) - 1) * 100;
+     }
+     // Max increase is x4 (+300%)

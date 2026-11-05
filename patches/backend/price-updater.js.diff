@@ -1,0 +1,66 @@
+--- a/tasks/price-updater.js
++++ b/tasks/price-updater.js
+@@ -57,5 +57,5 @@
+     running = false;
+     feeds = [];
+-    currencies = ['USD', 'EUR', 'GBP', 'CAD', 'CHF', 'AUD', 'JPY'];
++    currencies = ['USD']; // ECX: USD only (the market API has no other currency)
+     latestPrices;
+     latestGoodPrices;
+@@ -68,9 +68,29 @@
+         this.latestPrices = this.getEmptyPricesObj();
+         this.latestGoodPrices = this.getEmptyPricesObj();
+-        this.feeds.push(new bitflyer_api_1.default()); // Does not have historical endpoint
+-        this.feeds.push(new kraken_api_1.default());
+-        this.feeds.push(new coinbase_api_1.default());
+-        this.feeds.push(new bitfinex_api_1.default());
+-        this.feeds.push(new gemini_api_1.default());
++        // ECX: one feed, ecpool.tech's market API through the local guard (build-api.py, 2026-11-03)
++        this.feeds.push({
++            name: 'ecpool.tech',
++            currencies: ['USD'],
++            $fetchPrice: async (currency) => {
++                if (currency !== 'USD') {
++                    return -1;
++                }
++                const r = await fetch('http://127.0.0.1:8082/fw-market.json', { signal: AbortSignal.timeout(10000) });
++                if (!r.ok) {
++                    return -1;
++                }
++                const d = await r.json();
++                const now = Date.now() / 1000;
++                const fresh = (e) => !!e && typeof e.usd === 'number' && isFinite(e.usd) && e.usd > 0 &&
++                    typeof e.at === 'number' && now - e.at <= 600 && e.at <= now + 60;
++                if (fresh(d && d.ecxAvg)) {
++                    return d.ecxAvg.usd;
++                }
++                if (fresh(d && d.ecx)) {
++                    return d.ecx.usd;
++                }
++                return -1;
++            },
++        });
+         this.currencyConversionFeed = new free_currency_api_1.default();
+         this.setCyclePosition();
+@@ -180,4 +200,7 @@
+             this.latestGoodPrices.time = Math.round(new Date().getTime() / 1000);
+         }
++        else if (Math.round(new Date().getTime() / 1000) - this.latestGoodPrices.time > 900) {
++            this.latestGoodPrices[currency] = -1; // ECX: no stale price shown as live
++        }
+     }
+     getMillisecondsSinceBeginningOfHour() {
+@@ -245,5 +268,5 @@
+             }
+             else {
+-                this.setLatestPrice(currency, Math.round(getMedian(prices)));
++                this.setLatestPrice(currency, Math.round(getMedian(prices) * 100) / 100); // ECX: cents
+             }
+         }
+@@ -289,4 +312,6 @@
+      */
+     async $insertHistoricalPrices() {
++        this.historyInserted = true; // ECX: no Bitcoin price history (MtGox/Kraken) in this explorer
++        return;
+         const existingPriceTimes = await PricesRepository_1.default.$getPricesTimes();
+         // Insert MtGox weekly prices

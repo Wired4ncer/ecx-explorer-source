@@ -1,0 +1,9 @@
+--- a/api/backend-info.js
++++ b/api/backend-info.js
+@@ -34,5 +34,5 @@
+             backend: config_1.default.MEMPOOL.BACKEND,
+             coreVersion: '?',
+-            osVersion: `${os_1.default.type()} ${os_1.default.release()}`,
++            osVersion: '?', // ECX: public site, do not show the kernel
+         };
+         this.timer = setInterval(async () => {

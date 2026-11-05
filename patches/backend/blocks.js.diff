@@ -1,0 +1,40 @@
+--- a/api/blocks.js
++++ b/api/blocks.js
+@@ -923,5 +923,5 @@
+             this.updateTimerProgress(timer, 'got blockchain info for initial difficulty adjustment');
+             if (blockchainInfo.blocks === blockchainInfo.headers) {
+-                const heightDiff = blockHeightTip % 2016;
++                const heightDiff = blockHeightTip % 288; // ECX
+                 const blockHash = await bitcoin_api_factory_1.default.$getBlockHash(blockHeightTip - heightDiff);
+                 this.updateTimerProgress(timer, 'got block hash for initial difficulty adjustment');
+@@ -930,6 +930,6 @@
+                 this.lastDifficultyAdjustmentTime = block.timestamp;
+                 this.currentBits = block.bits;
+-                if (blockHeightTip >= 2016) {
+-                    const previousPeriodBlockHash = await bitcoin_api_factory_1.default.$getBlockHash(blockHeightTip - heightDiff - 2016);
++                if (blockHeightTip >= 288) { // ECX
++                    const previousPeriodBlockHash = await bitcoin_api_factory_1.default.$getBlockHash(blockHeightTip - heightDiff - 288); // ECX
+                     this.updateTimerProgress(timer, 'got previous block hash for initial difficulty adjustment');
+                     const previousPeriodBlock = await bitcoin_api_factory_1.default.$getBlock(previousPeriodBlockHash);
+@@ -1024,5 +1024,6 @@
+             this.updateTimerProgress(timer, `starting async callbacks for ${this.currentBlockHeight}`);
+             const callbackPromises = this.newAsyncBlockCallbacks.map((cb) => cb(blockExtended, txIds, cpfpSummary.transactions));
+-            if (block.height % 2016 === 0) {
++            if (block.height % 288 === 0) { // ECX
++                const ecxPrevBits = (await bitcoin_api_factory_1.default.$getBlock(verboseBlock.previousblockhash)).bits; // ECX
+                 if (common_1.Common.indexingEnabled()) {
+                     let adjustment;
+@@ -1034,5 +1035,5 @@
+                         // calcBitsDifference returns +- percentage, +100 returns to positive, /100 returns to ratio.
+                         // Instead of actually doing /100, just reduce the multiplier.
+-                        ((0, difficulty_adjustment_1.calcBitsDifference)(this.currentBits, block.bits) + 100) * 10000) / 1000000; // Remove float point noise
++                        ((0, difficulty_adjustment_1.calcBitsDifference)(ecxPrevBits, block.bits) + 100) * 10000) / 1000000; // Remove float point noise
+                     }
+                     await DifficultyAdjustmentsRepository_1.default.$saveAdjustments({
+@@ -1048,5 +1049,5 @@
+                 }
+                 else {
+-                    this.previousDifficultyRetarget = (0, difficulty_adjustment_1.calcBitsDifference)(this.currentBits, block.bits);
++                    this.previousDifficultyRetarget = (0, difficulty_adjustment_1.calcBitsDifference)(ecxPrevBits, block.bits);
+                 }
+                 this.lastDifficultyAdjustmentTime = block.timestamp;

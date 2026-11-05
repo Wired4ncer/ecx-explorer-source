@@ -1,0 +1,110 @@
+/* ECX look for the mempool explorer (2026-10-27, TEMPORARY with the fork-watch pages).
+   of the work is overriding them with the ecpool.tech palette (bg #0d0d0e, surface #171615, border #2e2a24,
+   accent #f7941d, accent-2 #ffb347). html:root beats mempool's :root and its optional theme sheets. */
+
+html:root {
+  --bg: #0d0d0e;
+  --active-bg: #000000;
+  --hover-bg: #1c1a18;
+  --nav-bg: #0d0d0e;
+  --navbar-bg: #171615;
+  --title-fg: #f7941d;
+  --primary: #f7941d;
+  --secondary: #2a2520;
+  --tertiary: #8a5514;
+  --info: #ffb347;
+  --link-color: #ffb347;
+  --link-hover-color: #f7941d;
+  --box-bg: #171615;
+  --stat-box-bg: #121110;
+  --skeleton-bg: #2e2a24;
+  --skeleton-bg-light: #4b453c;
+  --alert-bg: #2b2412;
+  --fade-out-box-bg-start: rgba(23, 22, 21, 0);
+  --fade-out-box-bg-end: rgba(23, 22, 21, 1);
+  --mainnet-alt: #9a3412;          /* 2nd colour of the mined-block gradient (with --primary) */
+  --search-button: #f7941d;
+  --search-button-border: #8a5514;
+  --search-button-focus: #ffb347;
+  --search-button-shadow: #f7941d80;
+}
+
+body {
+  background:
+    radial-gradient(1400px 600px at 50% -250px, rgba(247, 148, 29, 0.10), transparent 70%),
+    #0d0d0e !important;
+}
+
+/* top bar: dark, thin orange line under it */
+.navbar, nav.navbar {
+  background: #121110 !important;
+  border-bottom: 1px solid #8a5514;
+}
+
+/* block cubes: their face colours come from mempool itself (partly from --primary above); only the
+   cube sides get warm dark tones */
+.bitcoin-block::after {
+  background-color: #2a2520 !important;
+}
+.bitcoin-block::before {
+  background-color: #120f0c !important;
+}
+/* the fee-range line in each block is yellow by default — unreadable on orange */
+.bitcoin-block .fee-span {
+  color: #fff1d6 !important;
+}
+
+/* boxes: rounded, a warm hairline */
+.box, .card {
+  border: 1px solid #2e2a24 !important;
+  border-radius: 10px !important;
+}
+
+/* search button + primary buttons in the pool orange, dark text */
+.btn-purple, .btn-primary {
+  background-color: #f7941d !important;
+  border-color: #8a5514 !important;
+  color: #1a1000 !important;
+}
+
+   neon glow that flickers like a live wire, and bolts crackling across its face (SVG added by fw-bar.js).
+   mempool gives every mined cube id="bitcoin-block-<height>". Cyan = the fork icon on ecpool.tech, and it
+   stands out from the orange cubes. drop-shadow, not box-shadow: it follows the cube's 3D top and side. */
+#bitcoin-block-973728 {
+  filter: drop-shadow(0 0 6px #22e4ff) drop-shadow(0 0 16px rgba(34, 228, 255, 0.75));
+  animation: fw-forkglow 3.2s linear infinite;
+}
+@keyframes fw-forkglow {
+  0%, 100% { filter: drop-shadow(0 0 6px #22e4ff) drop-shadow(0 0 16px rgba(34, 228, 255, 0.75)); }
+  46%      { filter: drop-shadow(0 0 9px #22e4ff) drop-shadow(0 0 26px rgba(34, 228, 255, 0.95)); }
+  48%      { filter: drop-shadow(0 0 3px #e0fbff) drop-shadow(0 0 40px rgba(120, 240, 255, 1)) brightness(1.35); }
+  50%      { filter: drop-shadow(0 0 8px #22e4ff) drop-shadow(0 0 20px rgba(34, 228, 255, 0.8)); }
+  52%      { filter: drop-shadow(0 0 3px #e0fbff) drop-shadow(0 0 34px rgba(120, 240, 255, 1)) brightness(1.25); }
+  56%      { filter: drop-shadow(0 0 9px #22e4ff) drop-shadow(0 0 26px rgba(34, 228, 255, 0.95)); }
+}
+#bitcoin-block-973728 .fw-bolts {
+  position: absolute; top: 0; left: 0; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; overflow: visible; z-index: 2;
+}
+#bitcoin-block-973728 .fw-bolt {
+  fill: none; stroke: #e8fdff; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px #22e4ff) drop-shadow(0 0 5px #22e4ff);
+  opacity: 0;
+  animation: fw-bolt 1.9s steps(1, end) infinite;
+}
+#bitcoin-block-973728 .fw-bolt-1 { animation-duration: 2.3s; animation-delay: 0.7s; }
+#bitcoin-block-973728 .fw-bolt-2 { animation-duration: 2.9s; animation-delay: 1.3s; }
+/* a strike = two or three quick flashes, then dark */
+@keyframes fw-bolt {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  13%  { opacity: 0.15; }
+  16%  { opacity: 0.95; }
+  21%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #bitcoin-block-973728, #bitcoin-block-973728 .fw-bolt { animation: none; }
+  #bitcoin-block-973728 .fw-bolt { opacity: 0.6; }
+}
