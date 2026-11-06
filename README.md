@@ -23,7 +23,7 @@ The site runs these unmodified, pinned images with the changes below applied on 
 | `web/explorer-logo.png` | The eCPool Explorer logo. It is ours and is not covered by the code license |
 | `pools/` | ECX mining pool list |
 
-Pool logos are copied into the frontend by `build-www.py`. They belong to their pools.
+Pool logos are copied into the frontend by `build-www.py`. They belong to their pools. The round badge icons from `pool-icons.py` are our own stand-ins for pools with no published logo; they are not those pools' marks.
 
 ## What stays from upstream
 
