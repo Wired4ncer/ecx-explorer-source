@@ -51,8 +51,8 @@ ICONS = {
                   f'<path {W} d="M32 11l6.4 13.8 15.1 1.8-11.2 10.3 3 14.9L32 45.4 18.7 52.800l3-14.9L10.500 27.600l15.100-1.800z"/>'),
     "ecxsolo": ("#84cc16", "#3f6212", mono("1", 34)),
     # simple: a plain cube
-    "simplepoolunknownoperator": ("#64748b", "#334155",
-                                  f'<g {S}><path d="M32 12l18 10v20L32 52 14 42V22z"/><path d="M14 22l18 10 18-10M32 32v20"/></g>'),
+    "simplepool": ("#64748b", "#334155",
+                   f'<g {S}><path d="M32 12l18 10v20L32 52 14 42V22z"/><path d="M14 22l18 10 18-10M32 32v20"/></g>'),
     # a mole: round head, small eyes, big snout, front teeth
     "molepoolcom": ("#a16207", "#57340a",
                     f'<circle cx="32" cy="31" r="19" {W}/>'
