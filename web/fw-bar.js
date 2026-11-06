@@ -181,15 +181,21 @@
   bar.id = 'fw-bar';
 
   // pool button in ecpool.tech's default theme colours (--accent-2 → --accent, text --on-accent)
-  var pool = link('https://ecpool.tech/', '⛏ Mine ECX at eCPool.tech',
+  var pool = link('https://ecpool.tech/', '⛏ Mine ',
     'color:var(--ecx-on-accent,#1a1000);background:linear-gradient(180deg,var(--ecx-accent-2,#ffb347),var(--ecx-accent,#f7941d));padding:4px 11px;' +
     'border-radius:999px;font-weight:700;white-space:nowrap;box-shadow:0 0 0 1px rgba(255,179,71,.35),0 2px 10px var(--ecx-glow,rgba(247,148,29,.45))');
+  // parts of the text, so the phone layout in fw-mempool.css can shorten it: "Mine at eCPool.tech" or "Mine ECX"
+  function part(cls, text) { var s = el('span', '', text); s.className = cls; return s; }
+  pool.appendChild(part('fw-ecx', 'ECX '));
+  pool.appendChild(part('fw-where', 'at eCPool.tech'));
   // the price links to wECX on Jupiter, same link as the pool site (EarnEstimate.tsx). The mint is fixed
   // can never point people at another token.
   var WECX_MINT = '6ombVv3YMs9qpx1QkycD9XW8HKSfv7vGrCFX3cxCYMVY';
   var price = link('https://jup.ag/tokens/' + WECX_MINT, '', 'display:none;white-space:nowrap;color:#e6e8f0;font-weight:400');
   var sep = el('span', 'opacity:.35;color:#e6e8f0', '|');
+  sep.className = 'fw-sep';
   var swap = link(other.href, other.text + ' ↗', 'font-weight:500');
+  swap.className = 'fw-swap';
 
   // pool button on top, price | other page below; one row in the fork header
   var row2 = el('div', 'display:flex;align-items:center;gap:10px');
@@ -199,7 +205,8 @@
   // the header right after the "ECX Fork Watch" title
   // (the navbar is flex with space-between; margin-right:auto keeps the network controls on the right).
   // Explorer on a wide screen (2026-11-05): one line in the top bar, between the menu icons and the search box.
-  // Smaller screens have no room, so it floats. Angular draws the bar after this script starts, so wait for it.
+  // logo, styled by .fw-compact in fw-mempool.css. In between there is no room, so it floats.
+  // Angular draws the bars after this script starts and swaps them between pages, so keep checking.
   var brand = onFork && document.querySelector('.app-header .navbar-brand');
   var wide = window.matchMedia && matchMedia('(min-width: 1200px)').matches;
   function inline(after, margin) {
@@ -223,24 +230,60 @@
     if (window.matchMedia && matchMedia('(max-width: 575px)').matches) bar.style.bottom = '72px';
     document.body.appendChild(bar);
   }
-  if (brand && wide) {
-    inline(brand, '0 auto 0 18px');
-  } else if (!onFork && window.matchMedia && matchMedia('(min-width: 1380px)').matches) {   // under this the search button is cut off
-    var tries = 0;
-    (function wait() {
-      var menu = document.querySelector('#navbarCollapse .navbar-nav');
-      if (menu) {
-        inline(menu, '0 12px');
-        // The banner must stay: if the app redraws its top bar, put it back.
-        setInterval(function () {
-          var m = document.querySelector('#navbarCollapse .navbar-nav');
-          if (m && !document.contains(bar)) inline(m, '0 12px');
-        }, 2000);
+  var BASE_CSS = bar.style.cssText, placed = '', tries = 0;
+  function reset(mode) { bar.style.cssText = BASE_CSS; bar.className = ''; placed = mode; }
+  function placeExplorer() {
+    var w = window.innerWidth, wait = false;
+    if (w < 992) {
+      // the phone transaction page has its own header, without the app's top bar
+      var host = document.querySelector('app-tracker .nav-header') || document.querySelector('header nav.navbar');
+      if (host) {
+        tries = 0;
+        if (placed === 'compact' && bar.parentNode === host) return;
+        reset('compact');
+        bar.style.cssText = '';
+        bar.className = 'fw-compact';
+        host.appendChild(bar);
         return;
       }
-      if (++tries > 50) { floating(); return; }
-      setTimeout(wait, 200);
-    })();
+      wait = true;
+    } else if (w >= 1380) {   // under this the search button is cut off
+      var menu = document.querySelector('#navbarCollapse .navbar-nav');
+      if (menu) {
+        tries = 0;
+        if (placed !== 'inline' || bar.parentNode !== menu.parentNode) { reset('inline'); inline(menu, '0 12px'); }
+        return;
+      }
+      wait = placed !== 'compact';   // the small layout must not linger on a wide screen
+    }
+    // Give the app about 10 s to draw its bar. A page without one (an error page) still gets the box, floating.
+    if (wait && placed !== 'floating' && ++tries <= 20) return;
+    if (placed !== 'floating' || bar.parentNode !== document.body) { reset('floating'); floating(); }
+  }
+
+  // Phones (2026-11-06): the block strip opens with the newest mined block off-screen. Bring it into view once on the
+  // pages that open at the tip. Never once the visitor has touched this page, and not on a block's page, which centres on that block.
+  var stripKey = '', stripDone = false, touched = false;
+  function placeStrip() {
+    var key = location.pathname + '|' + window.innerWidth;
+    if (key !== stripKey) { stripKey = key; stripDone = false; touched = false; }
+    if (window.innerWidth >= 768 || touched || stripDone) return;
+    if (!/^\/(?:[a-z]{2}(?:-[A-Z]{2})?(?:\/|$))?(?:mining\/?)?$/.test(location.pathname)) return;
+    var strip = document.querySelector('#blockchain-container'), line = document.querySelector('#divider');
+    var mined = document.querySelector('app-blockchain-blocks .bitcoin-block[id^="bitcoin-block-"]');
+    if (!strip || !line || !mined) return;
+    strip.scrollLeft += line.getBoundingClientRect().left - window.innerWidth * 0.4;
+    stripDone = true;
+  }
+
+  if (brand && wide) {
+    inline(brand, '0 auto 0 18px');
+  } else if (!onFork) {
+    window.addEventListener('touchstart', function () { touched = true; }, { passive: true });
+    var tick = function () { placeExplorer(); placeStrip(); };
+    tick();
+    setInterval(tick, 500);
+    window.addEventListener('resize', tick);
   } else {
     floating();
   }
@@ -312,12 +355,16 @@
       return;
     }
     price.textContent = '';
-    price.appendChild(el('span', 'opacity:.75;color:#e6e8f0', 'ECX '));
+    var unit = el('span', 'opacity:.75;color:#e6e8f0', 'ECX ');
+    unit.className = 'fw-long';
+    price.appendChild(unit);
     price.appendChild(el('span', 'font-weight:600;color:#e6e8f0', money(e.usd)));
     if (num(e.change24h)) {
       var up = e.change24h >= 0;
-      price.appendChild(el('span', 'margin-left:6px;color:' + (up ? '#3fd47c' : '#ff6b6b'),
-        (up ? '▲' : '▼') + Math.abs(e.change24h).toFixed(1) + '% 24h'));
+      var change = el('span', 'margin-left:6px;color:' + (up ? '#3fd47c' : '#ff6b6b'),
+        (up ? '▲' : '▼') + Math.abs(e.change24h).toFixed(1) + '%');
+      change.appendChild(part('fw-long', ' 24h'));
+      price.appendChild(change);
     }
     price.title = (e.avg ? 'Average of wECX on Jupiter and ECX on Neoxa' : 'wECX on Jupiter') +
       '. Opens the wECX token page. Price via ecpool.tech, updated ' +

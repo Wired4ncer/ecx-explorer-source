@@ -29,11 +29,20 @@ STYLE = f"""<style id="ecx-brand">
 .navbar-brand app-svg-images.mempool-logo svg, .navbar-brand app-svg-images[name="officialMempoolSpace"] svg {{ display:none !important; }}
 .navbar-brand app-svg-images.mempool-logo, .navbar-brand app-svg-images[name="officialMempoolSpace"] {{ display:inline-flex !important; align-items:center; gap:.5rem; width:auto !important; height:50px !important; }}
 .navbar-brand app-svg-images.mempool-logo::before, .navbar-brand app-svg-images[name="officialMempoolSpace"]::before {{ content:""; flex:none; width:186px; height:50px; background:url(/resources/favicons-ecx/explorer-logo.png) left center/contain no-repeat; }}
+/* Phones open a transaction on the tracker page, with its own header: same logo, no Bitcoin label (2026-11-06). */
+.nav-header app-svg-images.mempool-logo svg {{ display:none !important; }}
+.nav-header app-svg-images.mempool-logo {{ display:inline-flex !important; align-items:center; width:auto !important; height:50px !important; }}
+.nav-header app-svg-images.mempool-logo::before {{ content:""; flex:none; width:186px; height:50px; background:url(/resources/favicons-ecx/explorer-logo.png) left center/contain no-repeat; }}
+.nav-header .network-label {{ display:none !important; }}
 </style>"""
 
+# Under 992 px (bottom menu) it moves to the top of the page and scrolls away; the tracker page has no <main>, so it is hidden there.
+# From 992 px it stays a child of <body>, as before.
 NOTE = """<style id="ecx-note-style">#ecx-note{position:fixed;left:12px;bottom:12px;z-index:2147482000;max-width:calc(100vw - 24px);
 padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.4 sans-serif;pointer-events:none}
-@media (max-width:767px){#ecx-note{top:112px;bottom:auto}}</style><div id="ecx-note">Address search is coming soon. <a href="https://github.com/Wired4ncer/ecx-explorer-source" style="color:#d9a066;pointer-events:auto" rel="noopener">Source code</a></div>"""
+@media (max-width:991px){body>#ecx-note{display:none}main>#ecx-note{position:static;max-width:none;margin:6px 12px 0;padding:0;background:none;color:#9aa1ad;text-align:center}}</style><div id="ecx-note">Address search is coming soon. <a href="https://github.com/Wired4ncer/ecx-explorer-source" style="color:#d9a066;pointer-events:auto" rel="noopener">Source code</a></div>
+<script>(function(){var n=document.getElementById('ecx-note');function p(){var m=window.innerWidth<992&&document.querySelector('main');if(m){if(n.parentNode!==m)m.insertBefore(n,m.firstChild)}else if(n.parentNode!==document.body)document.body.appendChild(n)}
+new MutationObserver(p).observe(document.body,{childList:true,subtree:true});window.addEventListener('resize',p);p()})();</script>"""
 
 # The AGPL's source offer and the Mempool trademark policy's attribution, at the end of every page (2026-11-05).
 SOURCE_URL = "https://github.com/Wired4ncer/ecx-explorer-source"
