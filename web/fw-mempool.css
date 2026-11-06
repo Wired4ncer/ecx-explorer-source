@@ -217,3 +217,9 @@ main { min-width: 0 !important; }
 }
 /* The transaction page's own header lays its children out in a row. */
 .nav-header #fw-bar.fw-compact { position: static; align-self: center; margin-top: -8px; }   /* middle of the logo */
+
+   difficulty change matter more than the next halving, so show Remaining, not Next Halving. */
+@media (max-width: 484px), (min-width: 768px) and (max-width: 991px) {
+  app-difficulty-mining .difficulty-adjustment-container .item:nth-child(1) { display: block !important; }
+  app-difficulty-mining .difficulty-adjustment-container .item:nth-child(3) { display: none !important; }
+}
