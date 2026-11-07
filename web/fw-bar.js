@@ -22,9 +22,14 @@
     // the known ECX pools (pool list 3001-3108) each get their own colour — they are the ones that
     // matter after the fork; Bitcoin pools share the hashed colours (collisions there are fine)
     // pool-registry:ecx-colours begin
-    var ECX_POOLS = { 'FreeBank': '#fde047', 'bip300.xyz': '#7dd3fc', 'ePool': '#c4b5fd',
-                      'Pow.re': '#6ee7b7', 'guilastuce': '#f0abfc', 'kikko-ecash': '#67e8f9',
-                      'complicatedpool': '#e7d7a8', 'avonpool': '#a5b4fc', 'eCashPool': '#93c5fd' };
+    var ECX_POOLS = { 'FreeBank': '#a5b4fc', 'bip300.xyz': '#c4b5fd', 'ePool': '#f0abfc', 'Pow.re': '#fde047',
+                      'guilastuce': '#6ee7b7', 'kikko-ecash': '#67e8f9', 'complicatedpool': '#e7d7a8',
+                      'avonpool': '#cbd5e1', 'ecashpool.io': '#93c5fd', 'euhashme': '#7dd3fc', 'Skydoge.net': '#a5b4fc',
+                      'ECX Solopool': '#c4b5fd', 'Talking to you from the future': '#f0abfc', 'simplepool': '#fde047',
+                      'solo-ecash': '#6ee7b7', 'ec-pool': '#67e8f9', 'NurseryPool': '#e7d7a8', 'laPimpa': '#cbd5e1',
+                      'SupaPool': '#93c5fd', 'betaTests123': '#7dd3fc', 'Nanaco\'s Solo Mining Farm': '#a5b4fc',
+                      'ECX-SOLO': '#c4b5fd', 'molepool.com': '#f0abfc', 'BCM-ECX-PPLNS': '#fde047',
+                      'Szats.world': '#6ee7b7', 'SegPool': '#67e8f9', 'vaultnet': '#e7d7a8' };
     // pool-registry:ecx-colours end
     // the mining feed and our pool list spell some pools differently ("Antpool" / "AntPool",
     // "Binance" / "Binance Pool"): colour by a loose key so a pool keeps ONE colour from
