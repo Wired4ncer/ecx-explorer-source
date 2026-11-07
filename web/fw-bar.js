@@ -8,7 +8,7 @@
   if (location.hostname.indexOf('fork.') === 0) {
     var fixTitle = function () {
       if (document.title.indexOf('fork-observer') >= 0)
-        document.title = document.title.replace('fork-observer', 'ECX Fork Watch');
+        document.title = document.title.replace('fork-observer', 'eCPool Fork Watch');
     };
     fixTitle();
     var t = document.querySelector('title');
@@ -21,9 +21,11 @@
                    '#6ee7b7', '#67e8f9', '#e7d7a8', '#cbd5e1', '#93c5fd'];
     // the known ECX pools (pool list 3001-3108) each get their own colour — they are the ones that
     // matter after the fork; Bitcoin pools share the hashed colours (collisions there are fine)
+    // pool-registry:ecx-colours begin
     var ECX_POOLS = { 'FreeBank': '#fde047', 'bip300.xyz': '#7dd3fc', 'ePool': '#c4b5fd',
                       'Pow.re': '#6ee7b7', 'guilastuce': '#f0abfc', 'kikko-ecash': '#67e8f9',
                       'complicatedpool': '#e7d7a8', 'avonpool': '#a5b4fc', 'eCashPool': '#93c5fd' };
+    // pool-registry:ecx-colours end
     // the mining feed and our pool list spell some pools differently ("Antpool" / "AntPool",
     // "Binance" / "Binance Pool"): colour by a loose key so a pool keeps ONE colour from
     // "being mined" to its found block
@@ -48,8 +50,10 @@
       return stem;
     };
     // pool logo from the explorer's set (same pool list, same file names: name lower-cased, letters and
-    // digits only, e.g. "Foundry USA" -> foundryusa.svg); a pool without a logo just has no icon
-    var LOGO_BASE = 'https://mempool.ecpool.tech/resources/mining-pools/';
+    // digits only, e.g. "Foundry USA" -> foundryusa.svg). 11-07: explorer.ecpool.tech (mempool.ecpool.tech
+    // that fails, no icon. (A missing file answers 200 with HTML, which fails to load as an image.)
+    var LOGO_BASE = 'https://explorer.ecpool.tech/resources/mining-pools/';
+    var LOGO_DEFAULT = LOGO_BASE + 'default.svg';
     var SVGNS = 'http://www.w3.org/2000/svg';
     var ICON = 9;                           // matches the 9px found-block label (fw-theme.css)
     var placeIcon = function (text, name) {
@@ -68,10 +72,14 @@
         img.setAttribute('class', 'fw-pool-icon');
         img.setAttribute('width', ICON);
         img.setAttribute('height', ICON);
-        img.addEventListener('error', function () { this.style.display = 'none'; });
+        img.addEventListener('error', function () {
+          if (this.getAttribute('href') !== LOGO_DEFAULT) this.setAttribute('href', LOGO_DEFAULT);
+          else this.style.display = 'none';
+        });
         g.appendChild(img);
       }
-      if (img.getAttribute('href') !== href) {
+      if (img.getAttribute('data-fw-slug') !== slug) {
+        img.setAttribute('data-fw-slug', slug);
         img.style.display = '';
         img.setAttribute('href', href);
       }
@@ -87,7 +95,11 @@
         var n = labels[i], label = n.textContent || '';
         if (n.getAttribute('data-fw-pool') === label) continue;   // already done for this label
         n.setAttribute('data-fw-pool', label);
-        var name = fullName(label);
+        // 11-07: a found block's text carries d3's datum with the FULL pool name (fork-observer cuts the
+        // label at 14 characters) - so "Talking to you from the future" gets its own icon, as on the explorer.
+        // The "being mined" labels have no such datum: fall back to the ECX_POOLS lookup.
+        var dd = n.__data__, datumName = dd && dd.data && dd.data.data && dd.data.data.miner;
+        var name = (typeof datumName === 'string' && datumName) ? datumName : fullName(label);
         var c = poolColor(name);
         n.style.fill = c;
         var bg = n.parentNode && n.parentNode.querySelector('rect.mining-pool-bg');
@@ -158,7 +170,7 @@
 
   var onFork = location.hostname.indexOf('fork.') === 0;
   var other = onFork
-    ? { href: 'https://mempool.ecpool.tech/', text: 'Explorer' }
+    ? { href: 'https://explorer.ecpool.tech/', text: 'Explorer' }
     : { href: 'https://fork.ecpool.tech/', text: 'Fork watch' };
 
   function el(tag, css, text) {
@@ -185,7 +197,8 @@
     'color:var(--ecx-on-accent,#1a1000);background:linear-gradient(180deg,var(--ecx-accent-2,#ffb347),var(--ecx-accent,#f7941d));padding:4px 11px;' +
     'border-radius:999px;font-weight:700;white-space:nowrap;box-shadow:0 0 0 1px rgba(255,179,71,.35),0 2px 10px var(--ecx-glow,rgba(247,148,29,.45))');
   // parts of the text, so the phone layout in fw-mempool.css can shorten it: "Mine at eCPool.tech" or "Mine ECX"
-  function part(cls, text) { var s = el('span', '', text); s.className = cls; return s; }
+  // white on the orange button there; the parts must take the button's dark text colour, as on the explorer.
+  function part(cls, text) { var s = el('span', 'color:inherit', text); s.className = cls; return s; }
   pool.appendChild(part('fw-ecx', 'ECX '));
   pool.appendChild(part('fw-where', 'at eCPool.tech'));
   // the price links to wECX on Jupiter, same link as the pool site (EarnEstimate.tsx). The mint is fixed
@@ -202,8 +215,8 @@
   row2.appendChild(price); row2.appendChild(sep); row2.appendChild(swap);
   bar.appendChild(pool); bar.appendChild(row2);
   // fork page on a wide screen (≥1200 px: title + pill with price + network controls fit): sit in
-  // the header right after the "ECX Fork Watch" title
-  // (the navbar is flex with space-between; margin-right:auto keeps the network controls on the right).
+  // the header right after the eCPool FORK WATCH logo
+  // (the navbar is flex with space-between; auto margins on both sides centre it between them).
   // Explorer on a wide screen (2026-11-05): one line in the top bar, between the menu icons and the search box.
   // logo, styled by .fw-compact in fw-mempool.css. In between there is no room, so it floats.
   // Angular draws the bars after this script starts and swaps them between pages, so keep checking.
@@ -277,7 +290,7 @@
   }
 
   if (brand && wide) {
-    inline(brand, '0 auto 0 18px');
+    inline(brand, '0 auto');   // 11-07 (operator): in the middle of the header, between logo and network controls
   } else if (!onFork) {
     window.addEventListener('touchstart', function () { touched = true; }, { passive: true });
     var tick = function () { placeExplorer(); placeStrip(); };
