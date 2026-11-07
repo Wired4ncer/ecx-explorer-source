@@ -302,6 +302,11 @@
     tick();
     setInterval(tick, 500);
     window.addEventListener('resize', tick);
+  } else if (brand) {
+    // header, right of the logo. Styled by .fw-compact + .fw-fork in fw-theme.css.
+    bar.style.cssText = '';
+    bar.className = 'fw-compact fw-fork';
+    brand.parentNode.insertBefore(bar, brand.nextSibling);
   } else {
     floating();
   }
