@@ -170,6 +170,125 @@
     addBolts();
   }
 
+  // block fork watch knows there out: pool, main chain / orphan / rejected / Bitcoin. Read-only: it only reads the
+  // page's own /api/1/data.json. Nothing typed is ever put into the page as HTML (textContent only).
+  // Own function scope (11-07 fix): its `var load` overwrote the price bar's `function load` below (hoisting), so the
+  // price never showed. Nothing declared in here can reach the bar code.
+  if (location.hostname.indexOf('fork.') === 0 && window.top === window && !document.getElementById('fw-search')) (function () {
+    var EXPLORER = 'https://explorer.ecpool.tech/';
+    var FORK_HEIGHT = 973728;   // ECX left Bitcoin here
+    var cache = null, cacheAt = 0;
+    var mk = function (tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+    var load = function () {
+      if (cache && Date.now() - cacheAt < 60000) return Promise.resolve(cache);
+      return fetch('/api/1/data.json', { credentials: 'omit' }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (d) { cache = index(d); cacheAt = Date.now(); return cache; });
+    };
+    // Label every block: walk back from the ECX node's active tip = main chain; Bitcoin = everything that descends
+    // from the other block at the fork height; the rest are ECX rivals, labelled by the node's tip status if known.
+    var index = function (d) {
+      var hs = (d && d.header_infos) || [], byId = {}, byHash = {}, byHeight = {}, kids = {};
+      hs.forEach(function (h) {
+        byId[h.id] = h; byHash[h.hash] = h;
+        (byHeight[h.height] = byHeight[h.height] || []).push(h);
+        (kids[h.prev_id] = kids[h.prev_id] || []).push(h.id);
+      });
+      var node = (d.nodes || [])[0] || {}, tips = node.tips || [], label = {};
+      var walk = function (hash, stopAt) {
+        var out = [], h = byHash[hash];
+        while (h && !(stopAt && stopAt[h.id])) { out.push(h.id); h = byId[h.prev_id]; }
+        return out;
+      };
+      var main = {};
+      tips.filter(function (t) { return t.status === 'active'; }).forEach(function (t) {
+        walk(t.hash).forEach(function (id) { main[id] = 1; label[id] = 'main'; });
+      });
+      // Bitcoin = the subtree of the ONE non-main block at the fork height with by far the most descendants (the
+      // frozen Bitcoin chain). Other non-main blocks there are ECX orphans (11-07: the pool node's fork-week orphans).
+      var sub = function (id0) {
+        var seen = {}, q = [id0];
+        while (q.length) { var id = q.pop(); if (seen[id]) continue; seen[id] = 1; (kids[id] || []).forEach(function (k) { q.push(k); }); }
+        return seen;
+      };
+      var btc = {}, best = 0;
+      (byHeight[FORK_HEIGHT] || []).forEach(function (h) {
+        if (main[h.id]) return;
+        var s = sub(h.id), n = Object.keys(s).length;
+        if (n > best) { best = n; btc = s; }
+      });
+      if (best < 10) btc = {};   // no real Bitcoin chain in the data
+      Object.keys(btc).forEach(function (id) { label[id] = 'btc'; });
+      tips.filter(function (t) { return t.status !== 'active'; }).forEach(function (t) {
+        var st = t.status === 'invalid' ? 'invalid' : 'orphan';
+        walk(t.hash, main).forEach(function (id) { if (!btc[id]) label[id] = st; });
+      });
+      hs.forEach(function (h) { if (!label[h.id]) label[h.id] = 'orphan'; });
+      var low = Infinity, top = 0; hs.forEach(function (h) { if (h.height < low) low = h.height; if (h.height > top) top = h.height; });
+      return { byHash: byHash, byHeight: byHeight, label: label, low: low, top: top };
+    };
+    var TEXT = { main: 'ECX main chain', orphan: 'Orphan: not on the ECX main chain', invalid: 'Rejected: invalid under the ECX rules', btc: 'Bitcoin chain (shown for reference)' };
+    var box = mk('div'); box.id = 'fw-search';
+    var form = mk('form'); form.setAttribute('role', 'search');
+    var input = mk('input'); input.type = 'search'; input.placeholder = 'Block height or hash'; input.autocomplete = 'off';
+    input.setAttribute('aria-label', 'Search a block by height or hash'); input.maxLength = 64;
+    var btn = mk('button', null, 'Search'); btn.type = 'submit';
+    var out = mk('div', 'fw-search-out'); out.setAttribute('aria-live', 'polite');
+    form.appendChild(input); form.appendChild(btn); box.appendChild(form);
+    var say = function (t) { out.textContent = ''; if (t) out.appendChild(mk('p', 'fw-search-msg', t)); };
+    var row = function (h, ix) {
+      var r = mk('div', 'fw-search-row fw-st-' + ix.label[h.id]);
+      r.appendChild(mk('span', 'fw-search-h', String(h.height)));
+      r.appendChild(mk('span', 'fw-search-pool', h.miner && h.miner !== 'Unknown' ? h.miner : 'Pool unknown'));
+      r.appendChild(mk('span', 'fw-search-st', TEXT[ix.label[h.id]]));
+      var hash = mk('code', 'fw-search-hash', h.hash); hash.title = 'Block hash'; r.appendChild(hash);
+      if (ix.label[h.id] === 'main') {
+        var a = mk('a', null, 'Open in explorer ↗'); a.href = EXPLORER + 'block/' + h.hash; a.target = '_blank'; a.rel = 'noopener';
+        r.appendChild(a);
+      }
+      return r;
+    };
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var q = (input.value || '').trim().toLowerCase();
+      var isHeight = /^\d{1,7}$/.test(q), isHash = /^[0-9a-f]{64}$/.test(q);
+      if (!isHeight && !isHash) { say('Type a block height (e.g. 983167) or a 64-character block hash.'); return; }
+      say('Searching…');
+      load().then(function (ix) {
+        var found = isHeight ? (ix.byHeight[+q] || []) : (ix.byHash[q] ? [ix.byHash[q]] : []);
+        out.textContent = '';
+        if (found.length) {
+          if (isHeight && found.length > 1) out.appendChild(mk('p', 'fw-search-msg', found.length + ' blocks at this height:'));
+          found.forEach(function (h) { out.appendChild(row(h, ix)); });
+          return;
+        }
+        // Not in fork watch's data: a quiet main-chain block (fork watch folds those) or older than its window.
+        var p = mk('p', 'fw-search-msg');
+        p.appendChild(document.createTextNode(isHeight && +q >= ix.low && +q <= ix.top
+          ? 'Fork watch only knows the main-chain block at ' + q + '. A block that lost a race often never reaches other ' +
+            'nodes, so an orphan can still exist there; your pool can confirm it. '
+          : 'Fork watch does not know this block. '));
+        var a = mk('a', null, 'Look it up in the explorer ↗'); a.href = EXPLORER + 'block/' + q; a.target = '_blank'; a.rel = 'noopener';
+        p.appendChild(a); out.appendChild(p);
+      }).catch(function () { say('Could not load fork watch data. Please try again in a minute.'); });
+    });
+    // above the tree. Without the toolbar (page changed), both go above the tree as before.
+    var placeSearch = function () {
+      var viz = document.getElementById('drawing-area');
+      var host = viz && viz.parentNode;
+      if (!host || !host.parentNode) return false;
+      var controls = document.querySelector('.toolbar-controls');
+      if (controls) { box.className = 'fw-search-side'; controls.appendChild(box); }
+      else host.parentNode.insertBefore(box, host);
+      host.parentNode.insertBefore(out, host);
+      return true;
+    };
+    if (!placeSearch()) {
+      var tries2 = 0, t2 = setInterval(function () { if (placeSearch() || ++tries2 > 40) clearInterval(t2); }, 250);
+    }
+  })();
+
   if (window.top !== window) return;   // not inside embeds/iframes
   if (document.getElementById('fw-bar')) return;
 
