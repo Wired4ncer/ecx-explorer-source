@@ -246,11 +246,42 @@
       r.appendChild(mk('span', 'fw-search-pool', h.miner && h.miner !== 'Unknown' ? h.miner : 'Pool unknown'));
       r.appendChild(mk('span', 'fw-search-st', TEXT[ix.label[h.id]]));
       var hash = mk('code', 'fw-search-hash', h.hash); hash.title = 'Block hash'; r.appendChild(hash);
+      var links = mk('span', 'fw-search-links');
       if (ix.label[h.id] === 'main') {
         var a = mk('a', null, 'Open in explorer ↗'); a.href = EXPLORER + 'block/' + h.hash; a.target = '_blank'; a.rel = 'noopener';
-        r.appendChild(a);
+        links.appendChild(a);
       }
+      var show = mk('a', null, 'Show in fork watch ↓'); show.href = '#drawing-area';
+      show.addEventListener('click', function (e) { e.preventDefault(); showBlock(h.hash, r); });
+      links.appendChild(show);
+      r.appendChild(links);
       return r;
+    };
+    // own page-wide state (blocktree.js: layoutCache, zoom, svg, o, onBlockClick); if that ever changes, it says so.
+    var showBlock = function (hash, r) {
+      var note = function (t) { var old = r.querySelector('.fw-search-note'); if (old) old.remove(); r.appendChild(mk('span', 'fw-search-note', t)); };
+      try {
+        /* global layoutCache, zoom, svg, o, onBlockClick, d3 */
+        var root = layoutCache.layout[0], htoi = layoutCache.layout[2];
+        var node = root.descendants().find(function (n) { return n.data.data.hash === hash; });
+        if (!node) { note('This block sits inside a folded "blocks hidden" stretch of the main chain, so it has no box of its own.'); return; }
+        var viz = document.getElementById('drawing-area');
+        viz.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var box = viz.getBoundingClientRect();
+        zoom.translateTo(svg.transition(d3.transition().duration(750)), o.x(node, htoi), o.y(node, htoi), [box.width / 2, box.height / 2]);
+        var tries = 0;
+        var openCard = function () {   // after the pan the block is drawn (slow phones: retry up to ~2 s)
+          var el = null;
+          d3.selectAll('g.block').each(function (d) { if (d && d.data && d.data.data.hash === hash) el = this; });
+          if (!el) { if (++tries < 6) setTimeout(openCard, 250); return; }
+          var open = false;
+          d3.selectAll('.block-description').each(function () { if (this.getAttribute('data-hash') === hash) open = true; });
+          if (!open) onBlockClick({ target: el }, d3.select(el).datum());
+        };
+        setTimeout(openCard, 800);
+      } catch (err) {
+        note('Could not move the view. Please use the tree directly.');
+      }
     };
     form.addEventListener('submit', function (e) {
       e.preventDefault();
