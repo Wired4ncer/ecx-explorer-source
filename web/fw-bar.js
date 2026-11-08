@@ -184,7 +184,7 @@
       return fetch('/api/1/data.json', { credentials: 'omit' }).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
-      }).then(function (d) { cache = index(d); cacheAt = Date.now(); return cache; });
+      }).then(function (d) { var ix = index(d); if (!ix.starting) { cache = ix; cacheAt = Date.now(); } return ix; });
     };
     // Label every block: walk back from the ECX node's active tip = main chain; Bitcoin = everything that descends
     // from the other block at the fork height; the rest are ECX rivals, labelled by the node's tip status if known.
@@ -202,6 +202,9 @@
         return out;
       };
       var main = {};
+      // Right after a restart fork watch has no node tips yet: without the active tip nothing can be labelled
+      // (11-07: the largest branch at the fork height, ECX's, was then called Bitcoin). Not cached.
+      if (!tips.some(function (t) { return t.status === 'active' && byHash[t.hash]; })) return { starting: true };
       tips.filter(function (t) { return t.status === 'active'; }).forEach(function (t) {
         walk(t.hash).forEach(function (id) { main[id] = 1; label[id] = 'main'; });
       });
@@ -256,6 +259,7 @@
       if (!isHeight && !isHash) { say('Type a block height (e.g. 983167) or a 64-character block hash.'); return; }
       say('Searching…');
       load().then(function (ix) {
+        if (ix.starting) { say('Fork watch is still starting. Please try again in a minute.'); return; }
         var found = isHeight ? (ix.byHeight[+q] || []) : (ix.byHash[q] ? [ix.byHash[q]] : []);
         out.textContent = '';
         if (found.length) {
