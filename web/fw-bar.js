@@ -17,19 +17,21 @@
     // every pool name in its own colour, picked from a fixed set by a hash of the name, so a pool keeps
     // its colour across reloads. The set leaves out red (invalid), orange (our pool) and bright green
     // (active tip) so a label never reads as a tip status. Our pool keeps the ecpool.tech orange.
-    var PALETTE = ['#7dd3fc', '#a5b4fc', '#c4b5fd', '#f0abfc', '#fde047',
-                   '#6ee7b7', '#67e8f9', '#e7d7a8', '#cbd5e1', '#93c5fd'];
+    // into one slice. Picked to be as far apart as possible (OKLab), each >= 4.5:1 on a dark page; the order puts
+    // the most different colours first. pool-registry-sync.py reads this list: change it here only.
+    var PALETTE = ['#a855f7', '#67e8f9', '#f0abfc', '#bef264', '#3b82f6', '#f472b6', '#06b6d4', '#a78bfa', '#e7d7a8', '#a5b4fc',
+                   '#e879f9', '#2dd4bf', '#a8865a', '#60a5fa', '#d946ef', '#fde047', '#cbd5e1', '#c8b48a', '#ec4899', '#14b8a6'];
     // the known ECX pools (pool list 3001-3108) each get their own colour — they are the ones that
     // matter after the fork; Bitcoin pools share the hashed colours (collisions there are fine)
     // pool-registry:ecx-colours begin
-    var ECX_POOLS = { 'FreeBank': '#a5b4fc', 'bip300.xyz': '#c4b5fd', 'ePool': '#f0abfc', 'Pow.re': '#fde047',
-                      'guilastuce': '#6ee7b7', 'kikko-ecash': '#67e8f9', 'complicatedpool': '#e7d7a8',
-                      'avonpool': '#cbd5e1', 'ecashpool.io': '#93c5fd', 'euhashme': '#7dd3fc', 'Skydoge.net': '#a5b4fc',
-                      'ECX Solopool': '#c4b5fd', 'Talking to you from the future': '#f0abfc', 'simplepool': '#fde047',
-                      'solo-ecash': '#6ee7b7', 'ec-pool': '#67e8f9', 'NurseryPool': '#e7d7a8', 'laPimpa': '#cbd5e1',
-                      'SupaPool': '#93c5fd', 'betaTests123': '#7dd3fc', 'Nanaco\'s Solo Mining Farm': '#a5b4fc',
-                      'ECX-SOLO': '#c4b5fd', 'molepool.com': '#f0abfc', 'BCM-ECX-PPLNS': '#fde047',
-                      'Szats.world': '#6ee7b7', 'SegPool': '#67e8f9', 'vaultnet': '#e7d7a8' };
+    var ECX_POOLS = { 'FreeBank': '#2dd4bf', 'bip300.xyz': '#a8865a', 'ePool': '#60a5fa', 'Pow.re': '#d946ef',
+                      'guilastuce': '#fde047', 'kikko-ecash': '#cbd5e1', 'complicatedpool': '#c8b48a',
+                      'avonpool': '#ec4899', 'ecashpool.io': '#14b8a6', 'euhashme': '#a855f7', 'Skydoge.net': '#67e8f9',
+                      'ECX Solopool': '#f0abfc', 'Talking to you from the future': '#bef264', 'simplepool': '#3b82f6',
+                      'solo-ecash': '#f472b6', 'ec-pool': '#06b6d4', 'NurseryPool': '#a78bfa', 'laPimpa': '#e7d7a8',
+                      'SupaPool': '#a5b4fc', 'betaTests123': '#e879f9', 'Nanaco\'s Solo Mining Farm': '#2dd4bf',
+                      'ECX-SOLO': '#a8865a', 'molepool.com': '#60a5fa', 'BCM-ECX-PPLNS': '#d946ef',
+                      'Szats.world': '#fde047', 'SegPool': '#cbd5e1', 'vaultnet': '#c8b48a' };
     // pool-registry:ecx-colours end
     // the mining feed and our pool list spell some pools differently ("Antpool" / "AntPool",
     // "Binance" / "Binance Pool"): colour by a loose key so a pool keeps ONE colour from
@@ -239,7 +241,14 @@
     var btn = mk('button', null, 'Search'); btn.type = 'submit';
     var out = mk('div', 'fw-search-out'); out.setAttribute('aria-live', 'polite');
     form.appendChild(input); form.appendChild(btn); box.appendChild(form);
-    var say = function (t) { out.textContent = ''; if (t) out.appendChild(mk('p', 'fw-search-msg', t)); };
+    var seq = 0;
+    var addClose = function () {
+      var x = mk('button', 'fw-search-close', '×'); x.type = 'button';
+      x.title = 'Close'; x.setAttribute('aria-label', 'Close search results');
+      x.addEventListener('click', function () { seq++; out.textContent = ''; input.value = ''; });   // seq: a search still loading stays closed
+      out.insertBefore(x, out.firstChild);
+    };
+    var say = function (t) { out.textContent = ''; if (t) { out.appendChild(mk('p', 'fw-search-msg', t)); addClose(); } };
     var row = function (h, ix) {
       var r = mk('div', 'fw-search-row fw-st-' + ix.label[h.id]);
       r.appendChild(mk('span', 'fw-search-h', String(h.height)));
@@ -285,17 +294,20 @@
     };
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      var mine = ++seq;   // any new submit (even invalid) drops a search still loading
       var q = (input.value || '').trim().toLowerCase();
       var isHeight = /^\d{1,7}$/.test(q), isHash = /^[0-9a-f]{64}$/.test(q);
       if (!isHeight && !isHash) { say('Type a block height (e.g. 983167) or a 64-character block hash.'); return; }
       say('Searching…');
       load().then(function (ix) {
+        if (mine !== seq) return;
         if (ix.starting) { say('Fork watch is still starting. Please try again in a minute.'); return; }
         var found = isHeight ? (ix.byHeight[+q] || []) : (ix.byHash[q] ? [ix.byHash[q]] : []);
         out.textContent = '';
         if (found.length) {
           if (isHeight && found.length > 1) out.appendChild(mk('p', 'fw-search-msg', found.length + ' blocks at this height:'));
           found.forEach(function (h) { out.appendChild(row(h, ix)); });
+          addClose();
           return;
         }
         // Not in fork watch's data: a quiet main-chain block (fork watch folds those) or older than its window.
@@ -305,8 +317,8 @@
             'nodes, so an orphan can still exist there; your pool can confirm it. '
           : 'Fork watch does not know this block. '));
         var a = mk('a', null, 'Look it up in the explorer ↗'); a.href = EXPLORER + 'block/' + q; a.target = '_blank'; a.rel = 'noopener';
-        p.appendChild(a); out.appendChild(p);
-      }).catch(function () { say('Could not load fork watch data. Please try again in a minute.'); });
+        p.appendChild(a); out.appendChild(p); addClose();
+      }).catch(function () { if (mine === seq) say('Could not load fork watch data. Please try again in a minute.'); });
     });
     // above the tree. Without the toolbar (page changed), both go above the tree as before.
     var placeSearch = function () {
@@ -350,6 +362,7 @@
     'border-radius:12px;background:var(--ecx-elevated,#171615);color:#e6e8f0;border:1px solid var(--ecx-accent-dim,#8a5514);' +
     'box-shadow:0 4px 18px rgba(0,0,0,.35);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif');
   bar.id = 'fw-bar';
+  bar.setAttribute('data-noprice', '');   // until the first price arrives: no lone "|" (show() clears it)
 
   // pool button in ecpool.tech's default theme colours (--accent-2 → --accent, text --on-accent)
   var pool = link('https://ecpool.tech/', '⛏ Mine ',
@@ -529,6 +542,7 @@
     if (!e) {
       price.style.display = 'none';
       sep.style.display = 'none';           // no "|" in front of the link when there is no price
+      bar.setAttribute('data-noprice', '');  // 11-08: the phone CSS forces .fw-sep on; an attribute survives reset()'s className
       return;
     }
     price.textContent = '';
@@ -548,6 +562,7 @@
       new Date(e.at * 1000).toLocaleTimeString();
     price.style.display = '';
     sep.style.display = '';
+    bar.removeAttribute('data-noprice');
   }
 
   function load() {

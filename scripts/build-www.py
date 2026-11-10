@@ -61,6 +61,20 @@ if(f&&l.parentNode!==f){{f.appendChild(l);l.style.display='block'}}}}new Mutatio
 # Trademark policy: modified software must not carry the project's logos, and their pages are not this site's.
 HIDE = """<style id="ecx-marks">#btn-about,.social-links,[class*="explore-tagline"],app-global-footer app-svg-images[name="mempoolSpace"],
 select[formcontrolname="fiat"],a[href$="/about"],a[href$="/terms-of-service"],a[href$="/privacy-policy"],a[href$="/trademark-policy"],a[href$="host-my-own-instance-raspberry-pi"]{display:none !important}</style>"""
+# fork watch and ecpool.tech's Drivechain status); never edit it by hand. Stock mempool colours a pie slice from a
+# slug -> colour map that holds only "unknown"; every other pool took a colour by its rank, so it changed day to day.
+# Every pool name that links to the pool's page is coloured by that link (a style, no code change): the list under the
+COLOURS_FILE = Path(__file__).resolve().with_name("pool-colours.json")
+POOL_COLOURS = json.loads(COLOURS_FILE.read_text())
+if (not isinstance(POOL_COLOURS, dict) or "unknown" not in POOL_COLOURS
+        or not all(isinstance(k, str) and re.fullmatch(r"[a-z0-9]+", k) and isinstance(v, str)
+                   and re.fullmatch(r"#[0-9a-f]{6}", v) for k, v in POOL_COLOURS.items())):
+    sys.exit(f"{COLOURS_FILE}: expected {{slug: '#rrggbb'}} with an 'unknown' entry")
+COLOUR_MAP_RE = re.compile(r'(?<![\w$])([\w$]{1,3})=\{unknown:"#FDD835"\}')
+COLOUR_MAP_JS = "{" + ",".join(f'"{k}":"{v}"' for k, v in POOL_COLOURS.items()) + "}"
+COLOUR_STYLE = ('<style id="ecx-pool-colours">'
+                + "".join(f'a[href$="/mining/pool/{k}"]{{color:{v} !important}}' for k, v in POOL_COLOURS.items())
+                + "</style>")
 SEARCH_PLACEHOLDER = "Search blocks and transactions"
 SEARCH_RE = re.compile(r'n="[^"]*",_="([^"]*)",\[\["searchInput",""\]')
 GOGGLES_RE = re.compile(r'Mempool Goggles(?:\\u2122|\u2122)?')
@@ -136,6 +150,9 @@ for idx in sorted(out.glob("*/index.html")):
     js, n = JS_DESC.subn(f'this.baseDescription="{DESC}"', js)
     if n != 1:
         sys.exit(f"{d / old}: {n} baseDescription strings")
+    js, n = COLOUR_MAP_RE.subn(lambda m: m.group(1) + "=" + COLOUR_MAP_JS, js)
+    if n != 1:
+        sys.exit(f"{d / old}: pool colour map found {n}x, expected 1")
     (d / BUNDLE).write_text(js)
     (d / old).unlink()
     html = html.replace(old, BUNDLE)
@@ -167,7 +184,7 @@ for idx in sorted(out.glob("*/index.html")):
         if html.count(a) != 1:
             sys.exit(f"{idx}: stock tag found {html.count(a)}x, expected 1: {a[:70]}")
         html = html.replace(a, b)
-    html = html.replace("</head>", SKIN_BOOT + STYLE + HIDE + "</head>", 1)
+    html = html.replace("</head>", SKIN_BOOT + STYLE + HIDE + COLOUR_STYLE + "</head>", 1)
     if html.count("</body>") != 1:
         sys.exit(f"{idx}: expected one </body>")
     html = html.replace("</body>", LEGAL + NOTE + "</body>")
@@ -248,4 +265,5 @@ sha = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 (ecx / "tree.json").write_text(json.dumps(
     {"sha": sha, "tree": [{"path": "pools-v2.json", "type": "blob", "sha": sha}]}, indent=2))
 
-print(f"patched {locales} locales, bundle {BUNDLE}, {units} BTC->ECX units, pool list sha {sha[:12]}")
+print(f"patched {locales} locales, bundle {BUNDLE}, {units} BTC->ECX units, pool list sha {sha[:12]}, "
+      f"{len(POOL_COLOURS)} pool colours")

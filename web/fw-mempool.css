@@ -223,3 +223,5 @@ main { min-width: 0 !important; }
   app-difficulty-mining .difficulty-adjustment-container .item:nth-child(1) { display: block !important; }
   app-difficulty-mining .difficulty-adjustment-container .item:nth-child(3) { display: none !important; }
 }
+/* 11-08: no price → no lone "|" (the ≥800 px rule above forces .fw-sep on); fw-bar.js sets data-noprice. */
+#fw-bar.fw-compact[data-noprice] .fw-sep { display: none !important; }
