@@ -95,6 +95,9 @@ ICONS = {
     # a world, with the szat's z on it
     "szatsworld": ("#8b5cf6", "#4c1d95",
                    f'<g {S}><circle cx="32" cy="32" r="21"/><path d="M11 32h5M48 32h5"/></g>' + mono("z", 30)),
+    # merged hash: two lines that join into one, pointing down
+    "mergedhash": ("#c026d3", "#701a75",
+                   f'<g {S}><path d="M19 12v6c0 9 13 11 13 20v14M45 12v6c0 9-13 11-13 20"/><path d="M25 46l7 7 7-7"/></g>'),
 }
 
 # Default for any pool without an icon, in place of stock's pickaxe, which looks too much like the one in our logo.

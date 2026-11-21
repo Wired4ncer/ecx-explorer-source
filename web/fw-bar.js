@@ -31,7 +31,7 @@
                       'solo-ecash': '#f472b6', 'ec-pool': '#06b6d4', 'NurseryPool': '#a78bfa', 'laPimpa': '#e7d7a8',
                       'SupaPool': '#a5b4fc', 'betaTests123': '#e879f9', 'Nanaco\'s Solo Mining Farm': '#2dd4bf',
                       'ECX-SOLO': '#a8865a', 'molepool.com': '#60a5fa', 'BCM-ECX-PPLNS': '#d946ef',
-                      'Szats.world': '#fde047', 'SegPool': '#cbd5e1', 'vaultnet': '#c8b48a' };
+                      'Szats.world': '#fde047', 'SegPool': '#cbd5e1', 'vaultnet': '#c8b48a', 'MergedHash': '#ec4899' };
     // pool-registry:ecx-colours end
     // the mining feed and our pool list spell some pools differently ("Antpool" / "AntPool",
     // "Binance" / "Binance Pool"): colour by a loose key so a pool keeps ONE colour from
