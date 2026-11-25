@@ -36,11 +36,12 @@ STYLE = f"""<style id="ecx-brand">
 .nav-header .network-label {{ display:none !important; }}
 </style>"""
 
+# The source link (AGPL). Until 2026-11-25 it also said that address search was coming.
 # Under 992 px (bottom menu) it moves to the top of the page and scrolls away; the tracker page has no <main>, so it is hidden there.
 # From 992 px it stays a child of <body>, as before.
 NOTE = """<style id="ecx-note-style">#ecx-note{position:fixed;left:12px;bottom:12px;z-index:2147482000;max-width:calc(100vw - 24px);
 padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.4 sans-serif;pointer-events:none}
-@media (max-width:991px){body>#ecx-note{display:none}main>#ecx-note{position:static;max-width:none;margin:6px 12px 0;padding:0;background:none;color:#9aa1ad;text-align:center}}</style><div id="ecx-note">Address search is coming soon. <a href="https://github.com/Wired4ncer/ecx-explorer-source" style="color:#d9a066;pointer-events:auto" rel="noopener">Source code</a></div>
+@media (max-width:991px){body>#ecx-note{display:none}main>#ecx-note{position:static;max-width:none;margin:6px 12px 0;padding:0;background:none;color:#9aa1ad;text-align:center}}</style><div id="ecx-note"><a href="https://github.com/Wired4ncer/ecx-explorer-source" style="color:#d9a066;pointer-events:auto" rel="noopener">Source code</a></div>
 <script>(function(){var n=document.getElementById('ecx-note');function p(){var m=window.innerWidth<992&&document.querySelector('main');if(m){if(n.parentNode!==m)m.insertBefore(n,m.firstChild)}else if(n.parentNode!==document.body)document.body.appendChild(n)}
 new MutationObserver(p).observe(document.body,{childList:true,subtree:true});window.addEventListener('resize',p);p()})();</script>"""
 
@@ -75,7 +76,7 @@ COLOUR_MAP_JS = "{" + ",".join(f'"{k}":"{v}"' for k, v in POOL_COLOURS.items()) 
 COLOUR_STYLE = ('<style id="ecx-pool-colours">'
                 + "".join(f'a[href$="/mining/pool/{k}"]{{color:{v} !important}}' for k, v in POOL_COLOURS.items())
                 + "</style>")
-SEARCH_PLACEHOLDER = "Search blocks and transactions"
+SEARCH_PLACEHOLDER = "Search blocks, transactions, addresses"
 SEARCH_RE = re.compile(r'n="[^"]*",_="([^"]*)",\[\["searchInput",""\]')
 GOGGLES_RE = re.compile(r'Mempool Goggles(?:\\u2122|\u2122)?')
 
