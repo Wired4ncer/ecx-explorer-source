@@ -98,7 +98,8 @@ patch("blocks.js", [
 # Address search (2026-11-25). ElectrumX caps an address's history (MAX_SEND) but its balance and coin lists read every
 # coin of the address, with no cap (guard.conf also answers 404 for coin lists): one huge address could use up its memory. So ask for the history first; when that
 # is refused, nothing else is asked. The scripthash routes have no such check: guard.conf answers 404 for them.
-# The refusal reaches the visitor as 500 "Failed to get address", not 413: stock's 413 page links to mempool.space (Bitcoin).
+# The refusal reaches the visitor as 422 with a plain sentence (bitcoin.routes.js below), not 413: stock's 413 page links to
+# mempool.space (Bitcoin).
 patch("electrum-api.js", [
     ("            const balance = await this.$getScriptHashBalance(addressInfo.scriptPubKey);\n"
      "            const history = await this.$getScriptHashHistory(addressInfo.scriptPubKey);\n",
@@ -118,11 +119,25 @@ patch("electrum-api.js", [
      "            return Promise.reject(new Error('busy'));\n"
      "        }\n"
      "        this.ecxBalanceWaiting++;\n"
-     "        const run = this.ecxBalanceQueue.then(() => this.$getScriptHashBalance(scriptHash));\n"
+     "        // A lookup that never answers must not hold the queue: ElectrumX itself gives up after 30 s.\n"
+     "        const run = this.ecxBalanceQueue.then(() => {\n"
+     "            let timer;\n"
+     "            const limit = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), 35000); });\n"
+     "            return Promise.race([this.$getScriptHashBalance(scriptHash), limit]).finally(() => clearTimeout(timer));\n"
+     "        });\n"
      "        this.ecxBalanceQueue = run.catch(() => undefined).then(() => { this.ecxBalanceWaiting--; });\n"
      "        return run;\n"
      "    }\n"
      "    $getScriptHashBalance(scriptHash) {\n"),
+], base=API + "/bitcoin")
+
+patch("bitcoin.routes.js", [
+    ("            if (e instanceof Error && e.message === 'Invalid Bitcoin address') {\n",
+     "            if (e instanceof Error && e.message === 'history too large') {\n"
+     "                res.status(422).type('text/plain').send('This address has too many transactions to show here (the limit is about 10,000).');\n"
+     "                return;\n"
+     "            }\n"
+     "            if (e instanceof Error && e.message === 'Invalid Bitcoin address') {\n", 3),
 ], base=API + "/bitcoin")
 
 # five exchanges for BITCOIN's price, so fiat was off (FIAT_PRICE_ENABLED=false) and the explorer showed no values.

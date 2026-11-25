@@ -15,7 +15,7 @@
 +        await this.$getScriptHashHistory(addressInfo.scriptPubKey); // ECX: capped, so first
          const scripthash = this.encodeScriptHash(addressInfo.scriptPubKey);
          return this.$getScriptHashUtxos(scripthash);
-@@ -211,4 +212,15 @@
+@@ -211,4 +212,20 @@
          return this.electrumClient.blockchainTransaction_getMerkle(txId, tx.status.block_height);
      }
 +    ecxBalanceQueue = Promise.resolve();
@@ -25,7 +25,12 @@
 +            return Promise.reject(new Error('busy'));
 +        }
 +        this.ecxBalanceWaiting++;
-+        const run = this.ecxBalanceQueue.then(() => this.$getScriptHashBalance(scriptHash));
++        // A lookup that never answers must not hold the queue: ElectrumX itself gives up after 30 s.
++        const run = this.ecxBalanceQueue.then(() => {
++            let timer;
++            const limit = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), 35000); });
++            return Promise.race([this.$getScriptHashBalance(scriptHash), limit]).finally(() => clearTimeout(timer));
++        });
 +        this.ecxBalanceQueue = run.catch(() => undefined).then(() => { this.ecxBalanceWaiting--; });
 +        return run;
 +    }

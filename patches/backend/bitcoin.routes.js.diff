@@ -1,0 +1,29 @@
+--- a/api/bitcoin/bitcoin.routes.js
++++ b/api/bitcoin/bitcoin.routes.js
+@@ -680,4 +680,8 @@
+         }
+         catch (e) {
++            if (e instanceof Error && e.message === 'history too large') {
++                res.status(422).type('text/plain').send('This address has too many transactions to show here (the limit is about 10,000).');
++                return;
++            }
+             if (e instanceof Error && e.message === 'Invalid Bitcoin address') {
+                 res.status(400).send(e.message);
+@@ -709,4 +713,8 @@
+         }
+         catch (e) {
++            if (e instanceof Error && e.message === 'history too large') {
++                res.status(422).type('text/plain').send('This address has too many transactions to show here (the limit is about 10,000).');
++                return;
++            }
+             if (e instanceof Error && e.message === 'Invalid Bitcoin address') {
+                 res.status(400).send(e.message);
+@@ -734,4 +742,8 @@
+         }
+         catch (e) {
++            if (e instanceof Error && e.message === 'history too large') {
++                res.status(422).type('text/plain').send('This address has too many transactions to show here (the limit is about 10,000).');
++                return;
++            }
+             if (e instanceof Error && e.message === 'Invalid Bitcoin address') {
+                 res.status(400).send(e.message);
