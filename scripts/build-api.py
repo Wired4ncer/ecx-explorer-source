@@ -95,6 +95,36 @@ patch("blocks.js", [
     ("calcBitsDifference)(this.currentBits, block.bits)", "calcBitsDifference)(ecxPrevBits, block.bits)", 2),
 ])
 
+# Address search (2026-11-25). ElectrumX caps an address's history (MAX_SEND) but its balance and coin lists read every
+# coin of the address, with no cap (guard.conf also answers 404 for coin lists): one huge address could use up its memory. So ask for the history first; when that
+# is refused, nothing else is asked. The scripthash routes have no such check: guard.conf answers 404 for them.
+# The refusal reaches the visitor as 500 "Failed to get address", not 413: stock's 413 page links to mempool.space (Bitcoin).
+patch("electrum-api.js", [
+    ("            const balance = await this.$getScriptHashBalance(addressInfo.scriptPubKey);\n"
+     "            const history = await this.$getScriptHashHistory(addressInfo.scriptPubKey);\n",
+     "            const history = await this.$getScriptHashHistory(addressInfo.scriptPubKey); // ECX: capped, so first\n"
+     "            const balance = await this.$ecxBalance(addressInfo.scriptPubKey);\n"),
+    ("        const scripthash = this.encodeScriptHash(addressInfo.scriptPubKey);\n"
+     "        return this.$getScriptHashUtxos(scripthash);\n",
+     "        await this.$getScriptHashHistory(addressInfo.scriptPubKey); // ECX: capped, so first\n"
+     "        const scripthash = this.encodeScriptHash(addressInfo.scriptPubKey);\n"
+     "        return this.$getScriptHashUtxos(scripthash);\n"),
+    # A balance reads every coin, and few transactions can hold very many: one balance at a time, at most 20 waiting.
+    ("    $getScriptHashBalance(scriptHash) {\n",
+     "    ecxBalanceQueue = Promise.resolve();\n"
+     "    ecxBalanceWaiting = 0;\n"
+     "    $ecxBalance(scriptHash) {\n"
+     "        if (this.ecxBalanceWaiting >= 20) {\n"
+     "            return Promise.reject(new Error('busy'));\n"
+     "        }\n"
+     "        this.ecxBalanceWaiting++;\n"
+     "        const run = this.ecxBalanceQueue.then(() => this.$getScriptHashBalance(scriptHash));\n"
+     "        this.ecxBalanceQueue = run.catch(() => undefined).then(() => { this.ecxBalanceWaiting--; });\n"
+     "        return run;\n"
+     "    }\n"
+     "    $getScriptHashBalance(scriptHash) {\n"),
+], base=API + "/bitcoin")
+
 # five exchanges for BITCOIN's price, so fiat was off (FIAT_PRICE_ENABLED=false) and the explorer showed no values.
 # Now one feed: ecpool.tech's /api/pool/market via the guard's /fw-market.json (127.0.0.1:8082, same proxy the pill
 # uses). It takes `ecxAvg` (the mean of wECX on Jupiter + native ECX on neoxa — what the pool site's "≈ $" lines use),

@@ -1,0 +1,33 @@
+--- a/api/bitcoin/electrum-api.js
++++ b/api/bitcoin/electrum-api.js
+@@ -37,6 +37,6 @@
+         }
+         try {
+-            const balance = await this.$getScriptHashBalance(addressInfo.scriptPubKey);
+-            const history = await this.$getScriptHashHistory(addressInfo.scriptPubKey);
++            const history = await this.$getScriptHashHistory(addressInfo.scriptPubKey); // ECX: capped, so first
++            const balance = await this.$ecxBalance(addressInfo.scriptPubKey);
+             const unconfirmed = history.filter((h) => h.fee).length;
+             return {
+@@ -132,4 +132,5 @@
+             throw new Error('Invalid Bitcoin address');
+         }
++        await this.$getScriptHashHistory(addressInfo.scriptPubKey); // ECX: capped, so first
+         const scripthash = this.encodeScriptHash(addressInfo.scriptPubKey);
+         return this.$getScriptHashUtxos(scripthash);
+@@ -211,4 +212,15 @@
+         return this.electrumClient.blockchainTransaction_getMerkle(txId, tx.status.block_height);
+     }
++    ecxBalanceQueue = Promise.resolve();
++    ecxBalanceWaiting = 0;
++    $ecxBalance(scriptHash) {
++        if (this.ecxBalanceWaiting >= 20) {
++            return Promise.reject(new Error('busy'));
++        }
++        this.ecxBalanceWaiting++;
++        const run = this.ecxBalanceQueue.then(() => this.$getScriptHashBalance(scriptHash));
++        this.ecxBalanceQueue = run.catch(() => undefined).then(() => { this.ecxBalanceWaiting--; });
++        return run;
++    }
+     $getScriptHashBalance(scriptHash) {
+         return this.electrumClient.blockchainScripthash_getBalance(this.encodeScriptHash(scriptHash));
